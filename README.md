@@ -17,7 +17,7 @@
 
 ```kotlin
 dependencies {
-    implementation("com.jun:jun-common-starter:v20250703-SNAPSHOT")
+    implementation("io.github.likaijunai:jun-common-starter:1.0.1")
 }
 ```
 
