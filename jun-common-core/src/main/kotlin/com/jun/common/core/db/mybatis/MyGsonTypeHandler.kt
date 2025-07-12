@@ -8,7 +8,6 @@ import com.jun.common.core.util.AesUtil
 import org.apache.ibatis.type.JdbcType
 import java.lang.reflect.Type
 import java.sql.*
-import java.util.*
 import java.util.Date
 
 /**
