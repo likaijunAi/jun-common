@@ -17,7 +17,7 @@ jun-common 是基于Spring Boot的企业级开发框架，提供了一套完整�
 
 1. 添加依赖到你的项目：
 
-```kotlin
+```kotlin  
 dependencies {
     implementation("io.github.likaijunai:jun-common-starter:1.0.1")
 }
