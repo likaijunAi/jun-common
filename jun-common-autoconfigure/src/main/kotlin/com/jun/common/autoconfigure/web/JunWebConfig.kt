@@ -12,6 +12,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import org.springframework.core.Ordered
 import org.springframework.web.servlet.HandlerExceptionResolver
 
@@ -30,6 +31,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver
 )
 class JunWebConfig {
 
+    @Primary
     @Bean("JunDefaultHttpMessageConverters")
     fun httpMessageConverters(@Qualifier("JunDefaultGsonHttpMessageConverter")  defaultGsonHttpMessageConverter: DefaultGsonHttpMessageConverter): HttpMessageConverters {
         return HttpMessageConverters(defaultGsonHttpMessageConverter)
