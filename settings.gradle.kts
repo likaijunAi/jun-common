@@ -21,7 +21,7 @@ include(":jun-common-upload")
 include(":jun-common-autoconfigure")
 include(":jun-common-starter")
 
-include(":jun-common-upload-provider:upload-local-file")
-findProject(":jun-common-upload-provider:upload-local-file")?.name = "upload-local-file"
-include(":jun-common-upload-provider:upload-tencent-cos")
-findProject(":jun-common-upload-provider:upload-tencent-cos")?.name = "upload-tencent-cos"
+include(":jun-common-upload:upload-local-file")
+findProject(":jun-common-upload:upload-local-file")?.name = "upload-local-file"
+include(":jun-common-upload:upload-tencent-cos")
+findProject(":jun-common-upload:upload-tencent-cos")?.name = "upload-tencent-cos"
