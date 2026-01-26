@@ -17,5 +17,11 @@ rootProject.name = "jun-common"
 
 include(":jun-common-core")
 include(":jun-common-web")
+include(":jun-common-upload")
 include(":jun-common-autoconfigure")
 include(":jun-common-starter")
+
+include(":jun-common-upload-provider:upload-local-file")
+findProject(":jun-common-upload-provider:upload-local-file")?.name = "upload-local-file"
+include(":jun-common-upload-provider:upload-tencent-cos")
+findProject(":jun-common-upload-provider:upload-tencent-cos")?.name = "upload-tencent-cos"

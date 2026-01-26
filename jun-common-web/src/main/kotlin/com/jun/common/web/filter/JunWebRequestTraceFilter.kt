@@ -7,11 +7,7 @@ import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
-import org.springframework.http.server.PathContainer
-import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.web.util.ContentCachingResponseWrapper
-import org.springframework.web.util.pattern.PathPattern
-import org.springframework.web.util.pattern.PathPatternParser
 import java.util.concurrent.atomic.AtomicLong
 
 /**
@@ -20,7 +16,7 @@ import java.util.concurrent.atomic.AtomicLong
  * l@xsocket.cn
  * created at 2024/6/30 16:11
  **/
-class JunWebRequestTraceFilter(private val properties: JunWebTraceProperties) : OncePerRequestFilter() {
+class JunWebRequestTraceFilter(private val properties: JunWebTraceProperties) : SecurityFilter(properties.ignoring) {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val atomicLong = AtomicLong()
     private var prefix: String = RandomUtil.randomString(8)
@@ -33,10 +29,6 @@ class JunWebRequestTraceFilter(private val properties: JunWebTraceProperties) : 
         const val CACHED_REQUEST_BODY_ATTR = "cachedRequestBody"
         const val CACHED_REQUEST_IP_ATTR = "cachedRequestIp"
         const val AUTHORIZATION = "Authorization"
-    }
-
-    private val ignoringPatterns by lazy {
-        pathPatterns(properties.ignoring)
     }
 
     override fun doFilterInternal(
@@ -72,7 +64,7 @@ class JunWebRequestTraceFilter(private val properties: JunWebTraceProperties) : 
         cachingRequest.setAttribute(CACHED_REQUEST_BODY_ATTR, requestBody)
         cachingRequest.setAttribute(CACHED_REQUEST_IP_ATTR, ip)
 
-        log.info("Req {}-{}({})-{} {}", logId, method, requestUri, ip, requestBody)
+        log.info("Trace[{}] IN-{}({})-{} {}", logId, method, requestUri, ip, requestBody)
 
         // Proceed with the filter chain with wrapped request and response
         filterChain.doFilter(cachingRequest, cachingResponse)
@@ -82,48 +74,6 @@ class JunWebRequestTraceFilter(private val properties: JunWebTraceProperties) : 
         val responseBody = String(cachingResponse.contentAsByteArray)
         cachingResponse.copyBodyToResponse() // Write the cached response body back to the original response
 
-        log.info("Resp {}({}) {}", logId, status, responseBody)
-    }
-
-    fun getClientIp(request: HttpServletRequest): String? {
-        var ipAddress: String?
-        ipAddress = request.getHeader("x-forwarded-for")
-        if (ipAddress.isNullOrEmpty() || "unknown".equals(ipAddress, ignoreCase = true)) {
-            ipAddress = request.getHeader("Proxy-Client-IP")
-        }
-        if (ipAddress.isNullOrEmpty() || "unknown".equals(ipAddress, ignoreCase = true)) {
-            ipAddress = request.getHeader("WL-Proxy-Client-IP")
-        }
-        if (ipAddress.isNullOrEmpty() || "unknown".equals(ipAddress, ignoreCase = true)) {
-            ipAddress = request.getHeader("X-Real-IP")
-        }
-        if (ipAddress.isNullOrEmpty() || "unknown".equals(ipAddress, ignoreCase = true)) {
-            ipAddress = request.remoteAddr
-        }
-        if (ipAddress != null && ipAddress.length > 15) {
-            if (ipAddress.indexOf(",") > 0) {
-                ipAddress = ipAddress.substring(0, ipAddress.indexOf(","))
-            }
-        }
-        return ipAddress
-    }
-
-    private fun isIgnore(requestUri: String): Boolean {
-        return ignoringPatterns.firstOrNull { pattern: PathPattern ->
-            pattern.matches(
-                PathContainer.parsePath(requestUri)
-            )
-        }?.let { true } ?: false
-    }
-
-    private fun pathPatterns(mapping: List<String>? = null): List<PathPattern> {
-        val pathPatterns = mutableListOf<PathPattern>()
-        if (!mapping.isNullOrEmpty()) {
-            for (url in mapping) {
-                val pathPattern = PathPatternParser.defaultInstance.parse(url)
-                pathPatterns.add(pathPattern)
-            }
-        }
-        return pathPatterns
+        log.info("Trace[{}] OUT-({}) {}", logId, status, responseBody)
     }
 }

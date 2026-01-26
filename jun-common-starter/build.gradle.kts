@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 dependencies {
     api(project(":jun-common-core"))
     api(project(":jun-common-web"))
+    api(project(":jun-common-upload"))
     api(project(":jun-common-autoconfigure"))
-
 }
 
 tasks.withType<KotlinCompile> {

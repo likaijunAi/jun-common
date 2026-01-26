@@ -20,5 +20,7 @@ extra["logbackGelf"] = "6.0.1"
 extra["swagger2"] = "3.0.0"
 extra["swaggerAnnotations"] = "1.6.14"
 
+extra["cosApi"]        =  "5.6.227"
+
 
 

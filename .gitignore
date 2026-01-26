@@ -21,6 +21,7 @@ gpg/key-config.txt
 bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+**/src/test/**
 
 ### IntelliJ IDEA ###
 .idea

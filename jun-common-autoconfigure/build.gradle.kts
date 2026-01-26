@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 dependencies {
     implementation(project(":jun-common-core"))
     implementation(project(":jun-common-web"))
+    implementation(project(":jun-common-upload"))
     implementation("org.springframework.data:spring-data-redis")
     implementation("org.springframework.boot:spring-boot-autoconfigure")
     implementation("com.google.code.gson:gson:${property("gson")}")

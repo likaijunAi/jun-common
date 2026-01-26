@@ -46,5 +46,13 @@ open class Resp<T> @JvmOverloads constructor(
         fun <T> fail(error: String?, code: Int = fail): Resp<T?> {
             return Resp(code, error = error)
         }
+
+        fun <T> fail(error: Resp<*>): Resp<T?> {
+            return Resp(error.code, error = error.error)
+        }
+    }
+
+    fun isSuccess(): Boolean {
+        return code == Resp.success
     }
 }
