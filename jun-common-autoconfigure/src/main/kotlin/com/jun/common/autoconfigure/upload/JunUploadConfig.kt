@@ -1,6 +1,7 @@
 package com.jun.common.autoconfigure.upload
 
 import com.jun.common.upload.UploadManager
+import com.jun.common.upload.UploaderFactory
 import com.jun.common.upload.config.JunUploadProperties
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -32,6 +33,8 @@ class JunUploadConfig(
         matchIfMissing = false
     )
     fun uploadManager(): UploadManager {
-        return UploadManager(applicationContext)
+        val uploaderFactories  = applicationContext.getBeanNamesForType(UploaderFactory::class.java)
+            .map { name -> applicationContext.getBean(name, UploaderFactory::class.java) }
+        return UploadManager(uploaderFactories)
     }
 }

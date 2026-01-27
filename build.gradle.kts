@@ -48,4 +48,4 @@ subprojects {
         useJUnitPlatform()
     }
 }
-apply(from = "${project.rootDir}/publish-to-maven.gradle.kts")
+//apply(from = "${project.rootDir}/publish-to-maven.gradle.kts")

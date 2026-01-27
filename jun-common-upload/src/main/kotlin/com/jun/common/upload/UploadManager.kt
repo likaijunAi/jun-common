@@ -16,7 +16,7 @@ import java.io.InputStream
  * create 2026/1/23 11:56
  **/
 class UploadManager(
-    private val applicationContext: ApplicationContext
+    private val uploaderFactories: List<UploaderFactory>
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
@@ -27,11 +27,6 @@ class UploadManager(
     }
 
     private val listeners = mutableListOf<UploadListener>()
-
-    private val uploaderFactories by lazy {
-        applicationContext.getBeanNamesForType(UploaderFactory::class.java)
-            .map { name -> applicationContext.getBean(name, UploaderFactory::class.java) }
-    }
 
     fun addListener(listener: UploadListener) {
         logger.info("$listener")
@@ -148,6 +143,4 @@ class UploadManager(
 
         return upload(name, bucket, file.inputStream, fileName ?: "", type, size, contentType, createBy)
     }
-
-
 }
