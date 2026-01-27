@@ -85,13 +85,16 @@ class CosUploader(private val bucket: String, private val properties: CosUploadP
             if (contentType?.isNotEmpty() == true)
                 objectMetadata.contentType = contentType
 
-            val putObjectRequest = PutObjectRequest(cosBucket, objectKey, inputStream, objectMetadata)
+            inputStream.use { input ->
+                val putObjectRequest = PutObjectRequest(cosBucket, objectKey, input, objectMetadata)
 
-            calculatedMd5 = withTransferManager {
-                val upload = it.upload(putObjectRequest)
-                val uploadResult = upload.waitForUploadResult()
-                uploadResult.eTag?.replace("\"", "")
+                calculatedMd5 = withTransferManager {
+                    val upload = it.upload(putObjectRequest)
+                    val uploadResult = upload.waitForUploadResult()
+                    uploadResult.eTag?.replace("\"", "")
+                }
             }
+
         } catch (e: Exception) {
             logger.error("COS file upload failed: ${e.message}", e)
             return Resp.fail("Upload file failed: ${e.message}")
@@ -104,6 +107,7 @@ class CosUploader(private val bucket: String, private val properties: CosUploadP
         media.contentType = contentType
         media.dataType = NAME
         media.size = size
+        media.type = type
         media.createdBy = createBy
         media.createdAt = Date()
         media.md5 = calculatedMd5

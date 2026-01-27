@@ -5,7 +5,6 @@ import com.jun.common.upload.config.JunUploadProperties
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
@@ -20,15 +19,19 @@ import org.springframework.context.annotation.Configuration
 @EnableConfigurationProperties(
     JunUploadProperties::class
 )
-@ComponentScan(basePackages = ["com.jun.common.upload.provider","com.jun.common.upload.provider.config"])
+@ComponentScan(basePackages = ["com.jun.common.upload.provider.config","com.jun.common.upload.provider"])
 class JunUploadConfig(
-    val applicationContext: ApplicationContext,
-    val applicationEventPublisher: ApplicationEventPublisher
+    val applicationContext: ApplicationContext
 ) {
 
     @Bean
-    @ConditionalOnProperty("jun.upload.enable")
-    fun requestTraceFilter(properties: JunUploadProperties): UploadManager {
-        return UploadManager(applicationContext, applicationEventPublisher)
+    @ConditionalOnProperty(
+        prefix = "jun.upload",
+        name = ["enable"],
+        havingValue = "true",
+        matchIfMissing = false
+    )
+    fun uploadManager(): UploadManager {
+        return UploadManager(applicationContext)
     }
 }

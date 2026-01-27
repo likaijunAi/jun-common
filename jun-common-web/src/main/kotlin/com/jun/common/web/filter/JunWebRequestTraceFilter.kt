@@ -16,13 +16,14 @@ import java.util.concurrent.atomic.AtomicLong
  * l@xsocket.cn
  * created at 2024/6/30 16:11
  **/
-class JunWebRequestTraceFilter(private val properties: JunWebTraceProperties) : SecurityFilter(properties.ignoring) {
+class JunWebRequestTraceFilter(private val properties: JunWebTraceProperties) : SecurityFilter(properties) {
     private val log = LoggerFactory.getLogger(this::class.java)
     private val atomicLong = AtomicLong()
     private var prefix: String = RandomUtil.randomString(8)
 
     companion object {
         const val LOG_ID = "org.springframework.web.server.ServerWebExchange.LOG_ID"
+        const val VERIFY_USER_ID = "JunServerWebExchangeUtils.verifierUserId"
         const val VERIFY_DEF_ID = "JunServerWebExchangeUtils.verifierDefId"
         const val VERIFY_DEF_TYPE = "JunServerWebExchangeUtils.verifierDefType"
         const val VERIFY_JWT_PAYLOAD = "JunServerWebExchangeUtils.jwt.payload"
@@ -43,13 +44,13 @@ class JunWebRequestTraceFilter(private val properties: JunWebTraceProperties) : 
 
         val ip = getClientIp(request)
 
-        if (properties.header){
+        if (properties.header) {
             request.headerNames.asIterator().forEach { name ->
                 logger.info("header-> $name: ${request.getHeader(name)}")
             }
         }
 
-        if (!properties.enable || isIgnore(requestUri)) {
+        if (!shouldFilter(requestUri)) {
             request.setAttribute(LOG_ID, logId)
             request.setAttribute(CACHED_REQUEST_IP_ATTR, ip)
             filterChain.doFilter(request, response)

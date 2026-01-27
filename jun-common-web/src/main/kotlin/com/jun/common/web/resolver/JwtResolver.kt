@@ -1,4 +1,4 @@
-package com.jun.common.web.http
+package com.jun.common.web.resolver
 
 import com.jun.common.core.util.JwtPayload
 import java.io.UnsupportedEncodingException
@@ -9,7 +9,7 @@ import java.io.UnsupportedEncodingException
  * l@xsocket.cn
  * created at 2024/7/15 22:28
  **/
-interface JwtResolver {
+interface JwtResolver : Resolver {
     @Throws(UnsupportedEncodingException::class)
     fun generateToken(jwtPayload: JwtPayload): String?
 

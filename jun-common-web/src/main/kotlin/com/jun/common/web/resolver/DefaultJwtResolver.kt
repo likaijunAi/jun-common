@@ -1,4 +1,4 @@
-package com.jun.common.web.http
+package com.jun.common.web.resolver
 
 import cn.hutool.core.codec.Base64
 import cn.hutool.crypto.SecureUtil
@@ -8,7 +8,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.jun.common.core.util.JwtPayload
 import com.jun.common.core.web.GsonFactory
-import com.jun.common.web.config.JunWebJwtProperties
+import com.jun.common.web.config.JunJwtProperties
 import java.io.UnsupportedEncodingException
 import java.util.Date
 
@@ -19,7 +19,7 @@ import java.util.Date
  * l@xsocket.cn
  * created at 2024/7/15 22:31
  **/
-class DefaultJwtResolver(private val config: JunWebJwtProperties) : JwtResolver {
+class DefaultJwtResolver(private val config: JunJwtProperties) : JwtResolver {
 
     private val jwtVerifier by lazy {
         val algorithm = Algorithm.HMAC256(config.secret)

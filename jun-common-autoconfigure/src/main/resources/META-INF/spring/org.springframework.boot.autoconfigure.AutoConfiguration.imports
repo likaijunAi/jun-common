@@ -1,4 +1,6 @@
+com.jun.common.web.spring.ApplicationHolder
 com.jun.common.autoconfigure.cache.JunRedisCacheConfig
 com.jun.common.autoconfigure.web.JunWebConfig
+com.jun.common.autoconfigure.web.SecurityFilterRegistration
 com.jun.common.autoconfigure.web.WebMvcConfig
 com.jun.common.autoconfigure.upload.JunUploadConfig

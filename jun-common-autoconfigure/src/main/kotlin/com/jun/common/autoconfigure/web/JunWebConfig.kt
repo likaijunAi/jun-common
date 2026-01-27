@@ -2,7 +2,6 @@ package com.jun.common.autoconfigure.web
 
 import com.google.gson.Gson
 import com.jun.common.web.filter.JunWebRequestTraceFilter
-import com.jun.common.web.filter.JunWebSecurityFilter
 import com.jun.common.web.http.DefaultGsonHttpMessageConverter
 import com.jun.common.web.config.*
 import org.springframework.beans.factory.annotation.Qualifier
@@ -14,7 +13,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.core.Ordered
-import org.springframework.web.servlet.HandlerExceptionResolver
 
 /**
  * @author leolee
@@ -25,7 +23,6 @@ import org.springframework.web.servlet.HandlerExceptionResolver
 @Configuration
 @EnableConfigurationProperties(
     JunWebTraceProperties::class,
-    JunWebJwtProperties::class,
     JunWebSecurityProperties::class,
     JunWebRespProperties::class
 )
@@ -33,12 +30,12 @@ class JunWebConfig {
 
     @Primary
     @Bean("JunDefaultHttpMessageConverters")
-    fun httpMessageConverters(@Qualifier("JunDefaultGsonHttpMessageConverter")  defaultGsonHttpMessageConverter: DefaultGsonHttpMessageConverter): HttpMessageConverters {
+    fun httpMessageConverters(@Qualifier("JunDefaultGsonHttpMessageConverter") defaultGsonHttpMessageConverter: DefaultGsonHttpMessageConverter): HttpMessageConverters {
         return HttpMessageConverters(defaultGsonHttpMessageConverter)
     }
 
     @Bean("JunDefaultGsonHttpMessageConverter")
-    fun defaultGsonHttpMessageConverter(gson: Gson?=null): DefaultGsonHttpMessageConverter {
+    fun defaultGsonHttpMessageConverter(gson: Gson? = null): DefaultGsonHttpMessageConverter {
         if (gson == null) {
             return DefaultGsonHttpMessageConverter()
         }
@@ -51,21 +48,60 @@ class JunWebConfig {
         val registration = FilterRegistrationBean<JunWebRequestTraceFilter>()
         registration.filter = JunWebRequestTraceFilter(properties)
         registration.addUrlPatterns("/*")
-        registration.order = Ordered.HIGHEST_PRECEDENCE // 设置优先级
+        registration.order = Ordered.HIGHEST_PRECEDENCE
         return registration
     }
 
-    @Bean
-    @ConditionalOnProperty("jun.web.security.enable")
-    fun webSecurityFilter(
-        handlerExceptionResolver: HandlerExceptionResolver,
-        properties: JunWebSecurityProperties,
-        jwtConfig: JunWebJwtProperties
-    ): FilterRegistrationBean<JunWebSecurityFilter> {
-        val registration = FilterRegistrationBean<JunWebSecurityFilter>()
-        registration.filter = JunWebSecurityFilter(handlerExceptionResolver, properties, jwtConfig)
-        registration.addUrlPatterns("/*")
-        registration.order = Ordered.HIGHEST_PRECEDENCE + 1 // 设置优先级
-        return registration
-    }
+//    @Bean
+//    @ConditionalOnProperty(
+//        prefix = "jun.web.security",
+//        name = ["jwt-enable"],
+//        havingValue = "true",
+//        matchIfMissing = false
+//    )
+//    fun webJwtSecurityFilter(
+//        handlerExceptionResolver: HandlerExceptionResolver,
+//        webProperties: JunWebSecurityProperties
+//    ): List<FilterRegistrationBean<JunJwtSecurityFilter>> {
+//        val list = mutableListOf<FilterRegistrationBean<JunJwtSecurityFilter>>()
+//        webProperties.jwt?.forEach { properties ->
+//            val registration = FilterRegistrationBean<JunJwtSecurityFilter>()
+//            registration.filter = JunJwtSecurityFilter(handlerExceptionResolver, webProperties, properties)
+//            registration.addUrlPatterns("/*")
+//            registration.order = properties.order ?: Ordered.HIGHEST_PRECEDENCE
+//
+//            if (properties.name?.isNotEmpty() == true)
+//                registration.setName(properties.name)
+//            list.add(registration)
+//        }
+//        return list
+//    }
+//
+//    @Bean
+//    @ConditionalOnProperty(
+//        prefix = "jun.web.security",
+//        name = ["basic-enable"],
+//        havingValue = "true",
+//        matchIfMissing = false
+//    )
+//    fun webBasicSecurityFilter(
+//        handlerExceptionResolver: HandlerExceptionResolver,
+//        webProperties: JunWebSecurityProperties
+//    ): List<FilterRegistrationBean<JunBasicSecurityFilter>> {
+//        val list = mutableListOf<FilterRegistrationBean<JunBasicSecurityFilter>>()
+//        webProperties.basic?.forEach { properties ->
+//            val registration = FilterRegistrationBean<JunBasicSecurityFilter>()
+//            registration.filter = JunBasicSecurityFilter(handlerExceptionResolver, webProperties, properties)
+//            registration.addUrlPatterns("/*")
+//            registration.order = properties.order ?: Ordered.HIGHEST_PRECEDENCE
+//
+//            if (properties.name?.isNotEmpty() == true)
+//                registration.setName(properties.name)
+//
+//            list.add(registration)
+//        }
+//        return list
+//    }
+
+
 }

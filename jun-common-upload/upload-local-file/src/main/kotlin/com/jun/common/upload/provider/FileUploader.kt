@@ -73,7 +73,9 @@ class FileUploader(private val bucket: String, private val properties: FileUploa
 
         try {
             FileOutputStream(file).use { outputStream ->
-                IOUtils.copy(inputStream, outputStream)
+                inputStream.use { input ->
+                    IOUtils.copy(input, outputStream)
+                }
                 outputStream.flush()
             }
         } catch (e: Exception) {
@@ -89,6 +91,7 @@ class FileUploader(private val bucket: String, private val properties: FileUploa
         media.contentType = contentType
         media.dataType = NAME
         media.size = size
+        media.type = type
         media.createdBy = createBy
         media.createdAt = Date()
         media.md5 = DigestUtil.md5Hex(file)

@@ -9,11 +9,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  * created at 2024/7/7 13:19
  **/
 @ConfigurationProperties("jun.web.trace")
-class JunWebTraceProperties {
+class JunWebTraceProperties : JunSecurityProperties() {
 
     var enable: Boolean = true
 
     var header: Boolean = false
-
-    var ignoring: List<String>? = null
 }

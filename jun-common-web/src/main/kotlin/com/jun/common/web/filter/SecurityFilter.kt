@@ -1,6 +1,9 @@
 package com.jun.common.web.filter
 
+import com.jun.common.web.config.JunSecurityProperties
+import com.jun.common.web.spring.ApplicationHolder
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.server.PathContainer
 import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.web.util.pattern.PathPattern
@@ -12,18 +15,50 @@ import org.springframework.web.util.pattern.PathPatternParser
  * l@xsocket.cn
  * create 2025/8/4 15:49
  **/
-abstract class SecurityFilter(private var ignoring: List<String>? = null) : OncePerRequestFilter() {
+abstract class SecurityFilter(private var properties: JunSecurityProperties) : OncePerRequestFilter() {
 
-    private val ignoringPatterns by lazy {
-        pathPatterns(ignoring)
+    private val excludePatterns by lazy {
+        pathPatterns(properties.excludePaths)
     }
 
-    fun isIgnore(requestUri: String): Boolean {
-        return ignoringPatterns.firstOrNull { pattern: PathPattern ->
+    private val includePatterns by lazy {
+        pathPatterns(properties.urlPatterns)
+    }
+
+    fun resolveException(request: HttpServletRequest, response: HttpServletResponse, ex: Exception): Boolean {
+        return ApplicationHolder.getHandlerExceptionResolver()?.let {
+            it.resolveException(request, response, null, ex)
+            true
+        } ?: false
+    }
+
+    fun isExcluded(requestUri: String): Boolean {
+        return excludePatterns.firstOrNull { pattern: PathPattern ->
             pattern.matches(
                 PathContainer.parsePath(requestUri)
             )
         }?.let { true } ?: false
+    }
+
+    fun isUriMatched(requestUri: String): Boolean {
+        if (properties.urlPatterns?.isEmpty() == true) {
+            return false
+        }
+        return includePatterns.firstOrNull { pattern: PathPattern ->
+            pattern.matches(
+                PathContainer.parsePath(requestUri)
+            )
+        }?.let { true } ?: false
+    }
+
+    fun shouldFilter(uri: String): Boolean {
+        val path = PathContainer.parsePath(uri)
+
+        if (excludePatterns.any { it.matches(path) }) return false
+
+        if (includePatterns.isEmpty()) return true
+
+        return includePatterns.any { it.matches(path) }
     }
 
     private fun pathPatterns(mapping: List<String>? = null): List<PathPattern> {

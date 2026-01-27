@@ -3,10 +3,8 @@ package com.jun.common.web.http
 import com.jun.common.core.web.Resp
 import com.jun.common.web.exception.JunErrorException
 import com.jun.common.web.exception.ResolveException
-import com.jun.common.web.exception.UnauthorizedException
 import jakarta.servlet.ServletException
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.server.ResponseStatusException
 
 /**

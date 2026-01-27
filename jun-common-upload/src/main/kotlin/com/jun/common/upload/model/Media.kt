@@ -10,8 +10,7 @@ import java.util.*
  * l@xsocket.cn
  * create 2026/1/23 13:34
  **/
-class Media(override var dataType: String) : DataType, Serializable {
-    var id: Int? = null
+open class Media(override var dataType: String) : DataType, Serializable {
 
     var mediaId: String? = null
 

@@ -9,4 +9,4 @@ import java.io.Serializable
  * l@xsocket.cn
  * create 2026/1/23 14:42
  **/
-class UploadEvent(success: Boolean, error: String? = null, media: Media? = null) : Serializable
+class UploadEvent(val success: Boolean,val error: String? = null,val media: Media? = null) : Serializable
