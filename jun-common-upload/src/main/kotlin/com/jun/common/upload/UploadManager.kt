@@ -4,7 +4,6 @@ import com.jun.common.core.web.Resp
 import com.jun.common.upload.event.UploadEvent
 import com.jun.common.upload.model.Media
 import org.slf4j.LoggerFactory
-import org.springframework.context.ApplicationContext
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.io.InputStream
