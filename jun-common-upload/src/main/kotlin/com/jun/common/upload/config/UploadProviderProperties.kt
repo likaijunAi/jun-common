@@ -12,5 +12,8 @@ open class UploadProviderProperties {
     var maxSize: Long? = null
     var type: List<String>? = null
     var prefix: String? = null
-    var splitBucket: Int  = 1
+    var splitBucket: Int = 1
+
+    //指定存储位置 （使用指定存储位置，不使用bucket,mediaId 生成 objectKey 和 objectPath） 例如： /static/film
+    var uploadPath: String? = null
 }

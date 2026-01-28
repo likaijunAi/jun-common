@@ -47,5 +47,10 @@ subprojects {
     tasks.withType<Test> {
         useJUnitPlatform()
     }
+
+    tasks.register<Jar>("sourcesJar") {
+        archiveClassifier.set("sources")
+        from(sourceSets["main"].allSource)
+    }
 }
-//apply(from = "${project.rootDir}/publish-to-maven.gradle.kts")
+apply(from = "${project.rootDir}/publish-to-maven.gradle.kts")

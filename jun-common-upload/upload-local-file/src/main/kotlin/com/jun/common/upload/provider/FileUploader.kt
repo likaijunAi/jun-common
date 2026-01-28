@@ -104,7 +104,8 @@ class FileUploader(private val bucket: String, private val properties: FileUploa
         root: File,
         objectKey: String
     ): Resp<File?> {
-        val file = File(root, objectKey)
+        val filePath = objectKey.replace("/", File.separator)
+        val file = File(root, filePath)
         val dir = file.parentFile.absoluteFile
         val canonicalRoot = root.canonicalPath
         val canonicalDir = dir.canonicalPath
@@ -113,16 +114,20 @@ class FileUploader(private val bucket: String, private val properties: FileUploa
             return Resp.fail("Invalid directory path")
         }
 
-        var re = dir.mkdirs()
-        if (!re) return Resp.fail("Create Temp File Directory Fail")
+        if (!dir.exists() || dir.isFile) {
+            val re = dir.mkdirs()
+            if (!re) return Resp.fail("Create Temp File Directory Fail")
+        }
 
         val canonicalFile = file.canonicalPath
         if (!canonicalFile.startsWith(canonicalRoot)) {
             return Resp.fail("Invalid file path")
         }
 
-        re = file.createNewFile()
-        if (!re) return Resp.fail("Create Temp File Fail")
+        if (!file.exists()) {
+            val re = file.createNewFile()
+            if (!re) return Resp.fail("Create Temp File Fail")
+        }
 
         return Resp.success(file)
     }
@@ -140,12 +145,5 @@ class FileUploader(private val bucket: String, private val properties: FileUploa
             return Resp.success(FileInputStream(file))
         }
         return Resp.fail("Media is not found($path)")
-    }
-
-    override fun objectKey(bucket: String, mediaId: String, mediaName: String): String {
-        return if (properties.splitBucket == 1) {
-            "${File.separator}$bucket${File.separator}${splitBucket()}${File.separator}$mediaId${File.separator}$mediaName"
-        } else
-            "${File.separator}$bucket${File.separator}$mediaId${File.separator}$mediaName"
     }
 }

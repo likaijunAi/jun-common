@@ -27,6 +27,6 @@ class CosUploaderFactory(val config: CosUploadConfig) : AbstractUploaderFactory(
 
     override fun build(bucket: String): Uploader? {
         val properties = config.of(bucket) ?: return null
-        return CosUploader(bucket, properties)
+        return createUploader(properties)
     }
 }

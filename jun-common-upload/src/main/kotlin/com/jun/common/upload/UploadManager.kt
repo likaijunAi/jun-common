@@ -70,21 +70,22 @@ class UploadManager(
 
     @JvmOverloads
     fun verify(
-        name: String? = null,
+        dataType: String? = null,
         bucket: String,
         type: String,
         size: Long,
         contentType: String? = "application/octet-stream"
     ): Resp<String?> {
-        logger.info("$name;$bucket;$type;$size;$contentType")
+        logger.info("$dataType;$bucket;$type;$size;$contentType")
         val factory =
-            findUploader(name, bucket) ?: return Resp.fail("Can't find uploader by ({name:$name;bucket:$bucket})")
+            findUploader(dataType, bucket)
+                ?: return Resp.fail("Can't find uploader by ({dataType:$dataType;bucket:$bucket})")
         return factory.verify(type, size, contentType)
     }
 
     @JvmOverloads
     fun upload(
-        name: String? = null,
+        dataType: String? = null,
         bucket: String,
         inputStream: InputStream,
         fileName: String,
@@ -93,40 +94,52 @@ class UploadManager(
         contentType: String? = "application/octet-stream",
         createBy: String
     ): Resp<Media?> {
-        logger.info("$name;$bucket;$type;$size;$contentType;$createBy")
-        val factory =
-            findUploader(name, bucket) ?: return Resp.fail("Can't find uploader by ({name:$name;bucket:$bucket})")
+        logger.info("$dataType;$bucket;$type;$size;$contentType;$createBy")
+        val cloneStream = CloseAwareInputStream(inputStream = inputStream)
+        return fun(): Resp<Media?> {
+            val factory =
+                findUploader(dataType, bucket)
+                    ?: return Resp.fail("Can't find uploader by ({name:$dataType;bucket:$bucket})")
 
-        val resp = factory.upload(
-            inputStream, fileName, type, size, createBy, (if (contentType?.isNotEmpty() == true)
-                contentType
-            else
-                "application/octet-stream")
-        )
-        val media = resp.result
-        val event = UploadEvent(media != null, resp.error, media)
-        listeners.forEach {
-            it.onUpload(event)
+            val resp = factory.upload(
+                cloneStream, fileName, type, size, createBy, (if (contentType?.isNotEmpty() == true)
+                    contentType
+                else
+                    "application/octet-stream")
+            )
+            val media = resp.result
+            val event = UploadEvent(media != null, resp.error, media)
+            listeners.forEach {
+                it.onUpload(event)
+            }
+            return resp
+        }().apply {
+            try {
+                if (!cloneStream.isClosed()) {
+                    cloneStream.close()
+                }
+            } catch (_: Exception) {
+            }
         }
-        return resp
     }
 
     @JvmOverloads
-    fun getInputStream(name: String? = null, bucket: String, path: String): Resp<InputStream?> {
-        logger.info("$name;$bucket;$path")
+    fun getInputStream(dataType: String? = null, bucket: String, path: String): Resp<InputStream?> {
+        logger.info("$dataType;$bucket;$path")
         val factory =
-            findUploader(name, bucket) ?: return Resp.fail("Can't find uploader by ({name:$name;bucket:$bucket})")
+            findUploader(dataType, bucket)
+                ?: return Resp.fail("Can't find uploader by ({dataType:$dataType;bucket:$bucket})")
         return factory.getInputStream(path)
     }
 
     @JvmOverloads
     fun upload(
-        name: String? = null,
+        dataType: String? = null,
         bucket: String,
         createBy: String,
         file: MultipartFile
     ): Resp<Media?> {
-        logger.info("$name;$bucket;$createBy")
+        logger.info("$dataType;$bucket;$createBy")
         logger.info("upload (${file.originalFilename})")
         if (file.isEmpty) {
             return Resp.fail("File is is empty")
@@ -136,10 +149,19 @@ class UploadManager(
         val size = file.size
         val type = fileName?.substringAfterLast('.', "") ?: ""
 
-        val resp = verify(name, bucket, type, size, contentType)
+        val resp = verify(dataType, bucket, type, size, contentType)
         if (!resp.isSuccess())
             return Resp.fail(resp)
 
-        return upload(name, bucket, file.inputStream, fileName ?: "", type, size, contentType, createBy)
+        val inputStream = CloseAwareInputStream(inputStream = file.inputStream)
+
+        return upload(dataType, bucket, inputStream, fileName ?: "", type, size, contentType, createBy).apply {
+            try {
+                if (!inputStream.isClosed()) {
+                    inputStream.close()
+                }
+            } catch (_: Exception) {
+            }
+        }
     }
 }

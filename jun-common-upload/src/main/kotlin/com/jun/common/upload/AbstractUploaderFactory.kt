@@ -21,7 +21,7 @@ abstract class AbstractUploaderFactory(private val name: String) : UploaderFacto
         return name
     }
 
-    fun getUploader(bucket: String): Uploader? {
+    private fun getUploader(bucket: String): Uploader? {
         return if (cache.containsKey(bucket)) cache[bucket] else null
     }
 

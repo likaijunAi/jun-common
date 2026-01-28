@@ -48,6 +48,7 @@ class JunJwtSecurityFilter(
         }
 
         if (!shouldFilter(requestUri)) {
+            logger.info("doFilter")
             filterChain.doFilter(request, response)
             return
         }

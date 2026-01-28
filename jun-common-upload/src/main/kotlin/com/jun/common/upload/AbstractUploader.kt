@@ -45,17 +45,21 @@ abstract class AbstractUploader(private val properties: UploadProviderProperties
     }
 
     open fun objectKey(bucket: String, mediaId: String, mediaName: String): String {
-        return if (properties.splitBucket == 1) {
-            "/$bucket/${splitBucket()}/$mediaId/$mediaName".replace("//", "/")
+        if (properties.uploadPath?.isNotEmpty() == true) {
+            return "${properties.uploadPath}/$mediaName".replace("//", "/")
+        }
+
+        return (if (properties.splitBucket == 1) {
+            "/$bucket/${splitBucket()}/$mediaId/$mediaName"
         } else
-            "/$bucket/$mediaId/$mediaName".replace("//", "/")
+            "/$bucket/$mediaId/$mediaName").replace("//", "/")
     }
 
     open fun objectPath(objectKey: String): String {
-        return if (properties.prefix?.isNotEmpty() == true) {
+        return (if (properties.prefix?.isNotEmpty() == true) {
             "/${properties.prefix}$objectKey".replace(File.separator, "/")
         } else
-            objectKey.replace(File.separator, "/")
+            objectKey.replace(File.separator, "/")).replace("//", "/")
     }
 
     fun isValidPathSegment(segment: String): Boolean {

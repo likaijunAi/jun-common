@@ -2,6 +2,7 @@ package com.jun.common.autoconfigure.web
 
 import com.jun.common.web.http.DefaultGsonHttpMessageConverter
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
  * created at 2024/6/5 23:00
  **/
 @Configuration
+@ConditionalOnBean(name = ["JunDefaultGsonHttpMessageConverter"])
 class WebMvcConfig(@Qualifier("JunDefaultGsonHttpMessageConverter") val defaultGsonHttpMessageConverter: DefaultGsonHttpMessageConverter) : WebMvcConfigurationSupport() {
 
     override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
