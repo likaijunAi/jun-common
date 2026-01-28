@@ -52,6 +52,9 @@ class S3Uploader(private val bucket: String, private val properties: S3UploadPro
         createBy: String,
         contentType: String?
     ): Resp<Media?> {
+        val s3Bucket = properties.s3Bucket ?: return Resp.fail("Invalid s3 bucket")
+
+        logger.info("s3Bucket:$s3Bucket")
 
         val mediaName = name.takeIf { it.trim().isNotEmpty() } ?: mediaName()
         if (!isValidFileName(mediaName)) {
@@ -79,7 +82,7 @@ class S3Uploader(private val bucket: String, private val properties: S3UploadPro
             val client = getClient()
             inputStream.use { input ->
 
-                val putObjectRequest = PutObjectRequest(bucket, objectKey, input, objectMetadata)
+                val putObjectRequest = PutObjectRequest(s3Bucket, objectKey, input, objectMetadata)
 
                 val putObjectResult = client.putObject(putObjectRequest)
                 calculatedMd5 = putObjectResult.metadata.eTag?.replace("\"", "")
@@ -133,6 +136,10 @@ class S3Uploader(private val bucket: String, private val properties: S3UploadPro
     }
 
     override fun objectKey(bucket: String, mediaId: String, mediaName: String): String {
+        if (!properties.pathStyleAccessEnabled) {
+            return super.objectKey(bucket, mediaId, mediaName)
+        }
+
         if (properties.uploadPath?.isNotEmpty() == true) {
             return "${properties.uploadPath}/$mediaName".replace("//", "/")
         }
@@ -144,6 +151,10 @@ class S3Uploader(private val bucket: String, private val properties: S3UploadPro
     }
 
     override fun objectPath(objectKey: String): String {
+        if (!properties.pathStyleAccessEnabled) {
+            return super.objectPath(objectKey)
+        }
+
         val path = (if (properties.prefix?.isNotEmpty() == true) {
             "/${properties.prefix}$objectKey".replace(File.separator, "/")
         } else
