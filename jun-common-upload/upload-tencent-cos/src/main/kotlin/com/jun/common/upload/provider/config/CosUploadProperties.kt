@@ -12,6 +12,5 @@ class CosUploadProperties : UploadProviderProperties() {
     var secretId: String? = null
     var secretKey: String? = null
 
-    var cosBucket: String? = null
     var region: String? = null
 }

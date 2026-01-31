@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 class S3UploadConfig {
     var r3: List<S3UploadProperties>? = null
 
-    fun of(bucket: String): S3UploadProperties? {
-        return r3?.firstOrNull { it.bucket == bucket }
+    fun of(name: String): S3UploadProperties? {
+        return r3?.firstOrNull { it.name == name }
     }
 }

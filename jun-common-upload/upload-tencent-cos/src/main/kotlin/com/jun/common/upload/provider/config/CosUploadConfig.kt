@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 class CosUploadConfig {
     var cos: List<CosUploadProperties>? = null
 
-    fun of(bucket: String): CosUploadProperties? {
-        return cos?.firstOrNull { it.bucket == bucket }
+    fun of(name: String): CosUploadProperties? {
+        return cos?.firstOrNull { it.name == name }
     }
 }

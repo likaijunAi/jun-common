@@ -20,13 +20,12 @@ class CosUploaderFactory(val config: CosUploadConfig) : AbstractUploaderFactory(
         }
 
         fun createUploader(properties: CosUploadProperties): CosUploader {
-            properties.bucket ?: throw IllegalArgumentException("bucket is empty")
-            return CosUploader(properties.bucket!!, properties)
+            return CosUploader(properties)
         }
     }
 
-    override fun build(bucket: String): Uploader? {
-        val properties = config.of(bucket) ?: return null
+    override fun build(name: String): Uploader? {
+        val properties = config.of(name) ?: return null
         return createUploader(properties)
     }
 }

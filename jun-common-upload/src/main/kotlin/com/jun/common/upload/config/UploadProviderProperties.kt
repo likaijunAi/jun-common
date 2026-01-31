@@ -8,12 +8,18 @@ package com.jun.common.upload.config
  * created at 2024/7/7 13:19
  **/
 open class UploadProviderProperties {
-    var bucket: String? = null
+    //配置名字标记
+    lateinit var name: String
+    //指定存储位置
+    lateinit var uploadPath: String
+
     var maxSize: Long? = null
     var type: List<String>? = null
     var prefix: String? = null
+
+    //默认生成子目录（yyyy-MM/mediaId）
+    //设置0时候，覆盖原文件
     var splitBucket: Int = 1
 
-    //指定存储位置 （使用指定存储位置，不使用bucket,mediaId 生成 objectKey 和 objectPath） 例如： /static/film
-    var uploadPath: String? = null
+    var bucket: String? = null
 }

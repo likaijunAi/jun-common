@@ -20,13 +20,12 @@ class FileUploaderFactory(val config: FileUploadConfig) : AbstractUploaderFactor
         }
 
         fun createUploader(properties: FileUploadProperties): FileUploader {
-            properties.bucket ?: throw IllegalArgumentException("bucket is empty")
-            return FileUploader(properties.bucket!!, properties)
+            return FileUploader(properties)
         }
     }
 
-    override fun build(bucket: String): Uploader? {
-        val properties = config.of(bucket) ?: return null
+    override fun build(name: String): Uploader? {
+        val properties = config.of(name) ?: return null
         return createUploader(properties)
     }
 }

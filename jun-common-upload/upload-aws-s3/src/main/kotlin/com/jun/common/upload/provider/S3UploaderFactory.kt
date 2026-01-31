@@ -20,13 +20,12 @@ class S3UploaderFactory(val config: S3UploadConfig) : AbstractUploaderFactory(S3
         }
 
         fun createUploader(properties: S3UploadProperties): S3Uploader {
-            properties.bucket ?: throw IllegalArgumentException("bucket is empty")
-            return S3Uploader(properties.bucket!!, properties)
+            return S3Uploader(properties)
         }
     }
 
-    override fun build(bucket: String): Uploader? {
-        val properties = config.of(bucket) ?: return null
+    override fun build(name: String): Uploader? {
+        val properties = config.of(name) ?: return null
         return createUploader(properties)
     }
 }

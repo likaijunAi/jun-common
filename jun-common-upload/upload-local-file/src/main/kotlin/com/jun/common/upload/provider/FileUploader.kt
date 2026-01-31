@@ -15,7 +15,7 @@ import java.util.Date
  * l@xsocket.cn
  * create 2026/1/23 15:28
  **/
-class FileUploader(private val bucket: String, private val properties: FileUploadProperties) :
+class FileUploader(private val properties: FileUploadProperties) :
     AbstractUploader(properties) {
 
     companion object {
@@ -55,16 +55,12 @@ class FileUploader(private val bucket: String, private val properties: FileUploa
             return Resp.fail("Invalid file name")
         }
 
-        if (!isValidPathSegment(bucket)) {
-            return Resp.fail("Invalid bucket name")
-        }
-
         val mediaId = mediaId()
         if (!isValidPathSegment(mediaId)) {
             return Resp.fail("Invalid media ID")
         }
 
-        val objectKey = objectKey(bucket, mediaId, mediaName)
+        val objectKey = objectKey(mediaId, mediaName)
         val saveResp = getOutputStream(root, objectKey)
         if (!saveResp.isSuccess()) {
             return Resp.fail(saveResp)
@@ -87,7 +83,7 @@ class FileUploader(private val bucket: String, private val properties: FileUploa
         val media = Media(NAME)
         media.mediaId = mediaId
         media.name = mediaName
-        media.bucket = bucket
+        media.bucket = properties.bucket ?: properties.name
         media.contentType = contentType
         media.dataType = NAME
         media.size = size

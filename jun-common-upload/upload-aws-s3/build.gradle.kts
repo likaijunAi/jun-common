@@ -11,7 +11,7 @@ dependencies {
 	implementation("com.google.code.gson:gson:${property("gson")}")
 	implementation("cn.hutool:hutool-all:${property("hutool")}")
 
-	implementation("com.amazonaws:aws-java-sdk-s3:${property("awsSdkS3")}")
+	api("com.amazonaws:aws-java-sdk-s3:${property("awsSdkS3")}")
 }
 
 tasks.withType<KotlinCompile> {

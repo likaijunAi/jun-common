@@ -37,10 +37,10 @@ class UploadManager(
         listeners.remove(listener)
     }
 
-    private fun findUploader(name: String? = null, bucket: String): Uploader? {
-        if (name.isNullOrEmpty())
+    private fun findUploader(dataType: String? = null, bucket: String): Uploader? {
+        if (dataType.isNullOrEmpty())
             return findUploaderByBucket(bucket)
-        return uploaderFactories.firstOrNull { it.name() == name }?.createUploader(bucket)
+        return uploaderFactories.firstOrNull { it.dataType() == dataType }?.createUploader(bucket)
     }
 
     private fun findUploaderByBucket(bucket: String): Uploader? {

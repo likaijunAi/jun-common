@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateUtil
 import com.jun.common.core.web.Resp
 import com.jun.common.upload.config.UploadProviderProperties
 import cn.hutool.core.lang.UUID
-import com.jun.common.upload.model.Media
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -30,7 +29,7 @@ abstract class AbstractUploader(private val properties: UploadProviderProperties
         return Resp.success()
     }
 
-    fun splitBucket(): String {
+    private fun splitBucket(): String {
         val bucket: String =
             DateUtil.format(Date(System.currentTimeMillis()), dateFormat)
         return bucket
@@ -44,15 +43,11 @@ abstract class AbstractUploader(private val properties: UploadProviderProperties
         return UUID.fastUUID().toString()
     }
 
-    open fun objectKey(bucket: String, mediaId: String, mediaName: String): String {
-        if (properties.uploadPath?.isNotEmpty() == true) {
-            return "${properties.uploadPath}/$mediaName".replace("//", "/")
-        }
-
+    open fun objectKey(mediaId: String, mediaName: String): String {
         return (if (properties.splitBucket == 1) {
-            "/$bucket/${splitBucket()}/$mediaId/$mediaName"
+            "/${properties.uploadPath}/${splitBucket()}/$mediaId/$mediaName"
         } else
-            "/$bucket/$mediaId/$mediaName").replace("//", "/")
+            "/${properties.uploadPath}/$mediaName").replace("//", "/")
     }
 
     open fun objectPath(objectKey: String): String {

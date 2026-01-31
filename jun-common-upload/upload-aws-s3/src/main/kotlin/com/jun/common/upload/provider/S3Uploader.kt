@@ -14,7 +14,6 @@ import com.jun.common.core.web.Resp
 import com.jun.common.upload.AbstractUploader
 import com.jun.common.upload.model.Media
 import com.jun.common.upload.provider.config.S3UploadProperties
-import java.io.File
 import java.io.InputStream
 import java.util.Date
 
@@ -24,7 +23,7 @@ import java.util.Date
  * l@xsocket.cn
  * create 2026/1/23 17:10
  **/
-class S3Uploader(private val bucket: String, private val properties: S3UploadProperties) :
+class S3Uploader(private val properties: S3UploadProperties) :
     AbstractUploader(properties) {
 
     companion object {
@@ -52,9 +51,9 @@ class S3Uploader(private val bucket: String, private val properties: S3UploadPro
         createBy: String,
         contentType: String?
     ): Resp<Media?> {
-        val s3Bucket = properties.s3Bucket ?: return Resp.fail("Invalid s3 bucket")
+        val bucket = properties.bucket ?: return Resp.fail("Invalid s3 bucket")
 
-        logger.info("s3Bucket:$s3Bucket")
+        logger.info("s3Bucket:$bucket")
 
         val mediaName = name.takeIf { it.trim().isNotEmpty() } ?: mediaName()
         if (!isValidFileName(mediaName)) {
@@ -69,7 +68,7 @@ class S3Uploader(private val bucket: String, private val properties: S3UploadPro
         if (!isValidPathSegment(mediaId)) {
             return Resp.fail("Invalid media ID")
         }
-        val objectKey = objectKey(bucket, mediaId, mediaName)
+        val objectKey = objectKey(mediaId, mediaName)
         logger.info("objectKey:$objectKey")
         var calculatedMd5: String?
         try {
@@ -82,7 +81,7 @@ class S3Uploader(private val bucket: String, private val properties: S3UploadPro
             val client = getClient()
             inputStream.use { input ->
 
-                val putObjectRequest = PutObjectRequest(s3Bucket, objectKey, input, objectMetadata)
+                val putObjectRequest = PutObjectRequest(bucket, objectKey, input, objectMetadata)
 
                 val putObjectResult = client.putObject(putObjectRequest)
                 calculatedMd5 = putObjectResult.metadata.eTag?.replace("\"", "")
@@ -98,7 +97,7 @@ class S3Uploader(private val bucket: String, private val properties: S3UploadPro
         val media = Media(NAME)
         media.mediaId = mediaId
         media.name = mediaName
-        media.bucket = bucket
+        media.bucket = properties.bucket ?: properties.name
         media.contentType = contentType
         media.dataType = NAME
         media.size = size
@@ -115,10 +114,15 @@ class S3Uploader(private val bucket: String, private val properties: S3UploadPro
         try {
             val r3Bucket = properties.bucket ?: return Resp.fail("Invalid r3 bucket")
 
-            val objectKey = if (properties.prefix?.isNotEmpty() == true && path.startsWith(properties.prefix!!)) {
-                path.replaceFirst("/${properties.prefix}", "")
+            val objectPath = if (properties.pathStyleAccessEnabled) {
+                path.replaceFirst("/${properties.bucket}", "")
             } else
                 path
+
+            val objectKey = if (properties.prefix?.isNotEmpty() == true && objectPath.startsWith(properties.prefix!!)) {
+                objectPath.replaceFirst("/${properties.prefix}", "")
+            } else
+                objectPath
 
             val getObjectRequest = GetObjectRequest(r3Bucket, objectKey)
             val client = getClient()
@@ -135,30 +139,12 @@ class S3Uploader(private val bucket: String, private val properties: S3UploadPro
         }
     }
 
-    override fun objectKey(bucket: String, mediaId: String, mediaName: String): String {
-        if (!properties.pathStyleAccessEnabled) {
-            return super.objectKey(bucket, mediaId, mediaName)
-        }
-
-        if (properties.uploadPath?.isNotEmpty() == true) {
-            return "${properties.uploadPath}/$mediaName".replace("//", "/")
-        }
-
-        return (if (properties.splitBucket == 1) {
-            "/${splitBucket()}/$mediaId/$mediaName"
-        } else
-            "/$mediaId/$mediaName").replace("//", "/")
-    }
 
     override fun objectPath(objectKey: String): String {
-        if (!properties.pathStyleAccessEnabled) {
-            return super.objectPath(objectKey)
-        }
-
-        val path = (if (properties.prefix?.isNotEmpty() == true) {
-            "/${properties.prefix}$objectKey".replace(File.separator, "/")
+        val path = super.objectPath(objectKey)
+        return if (properties.pathStyleAccessEnabled) {
+            return "/${properties.bucket}/$path".replace("//", "/")
         } else
-            objectKey.replace(File.separator, "/")).replace("//", "/")
-        return "/${properties.bucket}$path"
+            path
     }
 }

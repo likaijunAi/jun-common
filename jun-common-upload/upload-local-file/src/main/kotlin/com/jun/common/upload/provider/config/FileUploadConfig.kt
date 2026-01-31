@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 class FileUploadConfig {
     var file: List<FileUploadProperties>? = null
 
-    fun of(bucket: String): FileUploadProperties? {
-        return file?.firstOrNull { it.bucket == bucket }
+    fun of(name: String): FileUploadProperties? {
+        return file?.firstOrNull { it.name == name }
     }
 }

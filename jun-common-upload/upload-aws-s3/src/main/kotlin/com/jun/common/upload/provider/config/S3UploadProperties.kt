@@ -13,7 +13,6 @@ class S3UploadProperties : UploadProviderProperties() {
     var secretAccessKey: String? = null
     var pathStyleAccessEnabled: Boolean = false
 
-    var s3Bucket: String? = null
     var endpoint: String? = null
     var region: String? = null
 }

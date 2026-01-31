@@ -24,7 +24,7 @@ import java.util.concurrent.Executors
  * l@xsocket.cn
  * create 2026/1/23 17:10
  **/
-class CosUploader(private val bucket: String, private val properties: CosUploadProperties) :
+class CosUploader(private val properties: CosUploadProperties) :
     AbstractUploader(properties) {
 
     companion object {
@@ -60,9 +60,9 @@ class CosUploader(private val bucket: String, private val properties: CosUploadP
         createBy: String,
         contentType: String?
     ): Resp<Media?> {
-        val cosBucket = properties.cosBucket ?: return Resp.fail("Invalid cos bucket")
+        val bucket = properties.bucket ?: return Resp.fail("Invalid cos bucket")
 
-        logger.info("cosBucket:$cosBucket")
+        logger.info("cosBucket:$bucket")
 
         val mediaName = name.takeIf { it.trim().isNotEmpty() } ?: mediaName()
         if (!isValidFileName(mediaName)) {
@@ -77,7 +77,7 @@ class CosUploader(private val bucket: String, private val properties: CosUploadP
         if (!isValidPathSegment(mediaId)) {
             return Resp.fail("Invalid media ID")
         }
-        val objectKey = objectKey(bucket, mediaId, mediaName)
+        val objectKey = objectKey(mediaId, mediaName)
         val calculatedMd5: String?
         try {
             val objectMetadata = ObjectMetadata()
@@ -85,8 +85,10 @@ class CosUploader(private val bucket: String, private val properties: CosUploadP
             if (contentType?.isNotEmpty() == true)
                 objectMetadata.contentType = contentType
 
+            //objectMetadata.contentLength = size
+
             inputStream.use { input ->
-                val putObjectRequest = PutObjectRequest(cosBucket, objectKey, input, objectMetadata)
+                val putObjectRequest = PutObjectRequest(bucket, objectKey, input, objectMetadata)
 
                 calculatedMd5 = withTransferManager {
                     val upload = it.upload(putObjectRequest)
@@ -103,7 +105,7 @@ class CosUploader(private val bucket: String, private val properties: CosUploadP
         val media = Media(NAME)
         media.mediaId = mediaId
         media.name = mediaName
-        media.bucket = bucket
+        media.bucket = properties.bucket ?: properties.name
         media.contentType = contentType
         media.dataType = NAME
         media.size = size
@@ -119,7 +121,7 @@ class CosUploader(private val bucket: String, private val properties: CosUploadP
 
     override fun getInputStream(path: String): Resp<InputStream?> {
         try {
-            val cosBucket = properties.cosBucket ?: return Resp.fail("Invalid cos bucket")
+            val cosBucket = properties.bucket ?: return Resp.fail("Invalid cos bucket")
 
             val objectKey = if (properties.prefix?.isNotEmpty() == true && path.startsWith(properties.prefix!!)) {
                 path.replaceFirst("/${properties.prefix}", "")

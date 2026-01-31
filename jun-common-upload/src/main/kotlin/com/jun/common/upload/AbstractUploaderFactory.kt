@@ -6,28 +6,28 @@ package com.jun.common.upload
  * l@xsocket.cn
  * create 2026/1/23 16:55
  **/
-abstract class AbstractUploaderFactory(private val name: String) : UploaderFactory {
+abstract class AbstractUploaderFactory(private val dataType: String) : UploaderFactory {
     private val cache = mutableMapOf<String, Uploader>()
 
-    override fun createUploader(bucket: String): Uploader? {
-        getUploader(bucket)?.apply {
+    override fun createUploader(name: String): Uploader? {
+        getUploader(name)?.apply {
             return this
         }
-        val uploader = build(bucket)
+        val uploader = build(name)
         return uploader
     }
 
-    override fun name(): String {
-        return name
+    override fun dataType(): String {
+        return dataType
     }
 
-    private fun getUploader(bucket: String): Uploader? {
-        return if (cache.containsKey(bucket)) cache[bucket] else null
+    private fun getUploader(name: String): Uploader? {
+        return if (cache.containsKey(name)) cache[name] else null
     }
 
     fun setUploader(bucket: String, uploader: Uploader) {
         cache[bucket] = uploader
     }
 
-    abstract fun build(bucket: String): Uploader?
+    abstract fun build(name: String): Uploader?
 }
