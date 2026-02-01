@@ -97,7 +97,7 @@ class S3Uploader(private val properties: S3UploadProperties) :
         val media = Media(NAME)
         media.mediaId = mediaId
         media.name = mediaName
-        media.bucket = properties.bucket ?: properties.name
+        media.bucket = properties.name
         media.contentType = contentType
         media.dataType = NAME
         media.size = size

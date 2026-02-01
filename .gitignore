@@ -23,6 +23,8 @@ bin/
 !**/src/test/**/bin/
 **/src/test/**
 
+temp
+
 ### IntelliJ IDEA ###
 .idea
 *.iws

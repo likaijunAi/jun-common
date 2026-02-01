@@ -1,7 +1,9 @@
 package com.jun.common.upload.provider
 
+import cn.hutool.crypto.digest.DigestUtil
 import com.jun.common.core.web.Resp
 import com.jun.common.upload.AbstractUploader
+import com.jun.common.upload.UploadManager
 import com.jun.common.upload.model.Media
 import com.jun.common.upload.provider.config.CosUploadProperties
 import com.qcloud.cos.COSClient
@@ -78,37 +80,52 @@ class CosUploader(private val properties: CosUploadProperties) :
             return Resp.fail("Invalid media ID")
         }
         val objectKey = objectKey(mediaId, mediaName)
-        val calculatedMd5: String?
+        val actualSize: Long
+        val calculatedMd5: String
+        val tempFile = UploadManager.getTempFile()
         try {
+            inputStream.use {
+                FileOutputStream(tempFile).use { out ->
+                    actualSize = it.copyTo(out)
+                }
+            }
+
             val objectMetadata = ObjectMetadata()
 
             if (contentType?.isNotEmpty() == true)
                 objectMetadata.contentType = contentType
+            objectMetadata.contentLength = actualSize
 
-            //objectMetadata.contentLength = size
-
-            inputStream.use { input ->
+            FileInputStream(tempFile).use { input ->
                 val putObjectRequest = PutObjectRequest(bucket, objectKey, input, objectMetadata)
 
-                calculatedMd5 = withTransferManager {
+                withTransferManager {
                     val upload = it.upload(putObjectRequest)
                     val uploadResult = upload.waitForUploadResult()
-                    uploadResult.eTag?.replace("\"", "")
+                    logger.info("eTag:${uploadResult.eTag}")
                 }
             }
+
+            calculatedMd5 = DigestUtil.md5Hex(tempFile)
 
         } catch (e: Exception) {
             logger.error("COS file upload failed: ${e.message}", e)
             return Resp.fail("Upload file failed: ${e.message}")
+        } finally {
+            try {
+                tempFile.exists() && tempFile.delete()
+            } catch (e: Exception) {
+                logger.warn("Failed to delete temp file: ${tempFile.absolutePath}", e)
+            }
         }
 
         val media = Media(NAME)
         media.mediaId = mediaId
         media.name = mediaName
-        media.bucket = properties.bucket ?: properties.name
+        media.bucket = properties.name
         media.contentType = contentType
         media.dataType = NAME
-        media.size = size
+        media.size = actualSize
         media.type = type
         media.createdBy = createBy
         media.createdAt = Date()

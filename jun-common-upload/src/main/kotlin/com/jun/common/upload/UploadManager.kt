@@ -19,10 +19,31 @@ class UploadManager(
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    private val defaultTempDir = File(System.getProperty("user.dir"), "temp")
-
     companion object {
         const val TEMP_ROOT = "jun.uploader.temp.dir"
+        private val defaultTempDir = File(System.getProperty("user.dir"), "temp")
+
+        private fun tempRoot(): File {
+            val path = System.getProperty(TEMP_ROOT) ?: defaultTempDir.absolutePath
+            return File(path).apply {
+                if (!this.exists()) {
+                    this.mkdirs()
+                }
+            }
+        }
+
+        fun getTempFile(isDirectory: Boolean = false): File {
+            val name = "temp_${System.currentTimeMillis()}"
+            val temp = File(tempRoot(), name)
+            if (isDirectory) {
+                temp.mkdir()
+            } else {
+                temp.createNewFile()
+            }
+            temp.deleteOnExit()
+            return temp
+        }
+
     }
 
     private val listeners = mutableListOf<UploadListener>()
@@ -37,56 +58,35 @@ class UploadManager(
         listeners.remove(listener)
     }
 
-    private fun findUploader(dataType: String? = null, bucket: String): Uploader? {
+    private fun findUploader(dataType: String? = null, dataName: String): Uploader? {
         if (dataType.isNullOrEmpty())
-            return findUploaderByBucket(bucket)
-        return uploaderFactories.firstOrNull { it.dataType() == dataType }?.createUploader(bucket)
+            return findUploaderByBucket(dataName)
+        return uploaderFactories.firstOrNull { it.dataType() == dataType }?.createUploader(dataName)
     }
 
     private fun findUploaderByBucket(bucket: String): Uploader? {
         return uploaderFactories.firstNotNullOfOrNull { it.createUploader(bucket) }
     }
 
-    private fun tempRoot(): File {
-        val path = System.getProperty(TEMP_ROOT) ?: defaultTempDir.absolutePath
-        return File(path).apply {
-            if (!this.exists()) {
-                this.mkdirs()
-            }
-        }
-    }
-
-    fun getTempFile(isDirectory: Boolean = false): File {
-        val name = "temp_${System.currentTimeMillis()}"
-        val temp = File(tempRoot(), name)
-        if (isDirectory) {
-            temp.mkdir()
-        } else {
-            temp.createNewFile()
-        }
-        temp.deleteOnExit()
-        return temp
-    }
-
     @JvmOverloads
     fun verify(
         dataType: String? = null,
-        bucket: String,
+        dataName: String,
         type: String,
         size: Long,
         contentType: String? = "application/octet-stream"
     ): Resp<String?> {
-        logger.info("$dataType;$bucket;$type;$size;$contentType")
+        logger.info("$dataType;$dataName;$type;$size;$contentType")
         val factory =
-            findUploader(dataType, bucket)
-                ?: return Resp.fail("Can't find uploader by ({dataType:$dataType;bucket:$bucket})")
+            findUploader(dataType, dataName)
+                ?: return Resp.fail("Can't find uploader by ({dataType:$dataType;bucket:$dataName})")
         return factory.verify(type, size, contentType)
     }
 
     @JvmOverloads
     fun upload(
         dataType: String? = null,
-        bucket: String,
+        dataName: String,
         inputStream: InputStream,
         fileName: String,
         type: String,
@@ -94,12 +94,12 @@ class UploadManager(
         contentType: String? = "application/octet-stream",
         createBy: String
     ): Resp<Media?> {
-        logger.info("$dataType;$bucket;$type;$size;$contentType;$createBy")
+        logger.info("$dataType;$dataName;$type;$size;$contentType;$createBy")
         val cloneStream = CloseAwareInputStream(inputStream = inputStream)
         return fun(): Resp<Media?> {
             val factory =
-                findUploader(dataType, bucket)
-                    ?: return Resp.fail("Can't find uploader by ({name:$dataType;bucket:$bucket})")
+                findUploader(dataType, dataName)
+                    ?: return Resp.fail("Can't find uploader by ({name:$dataType;dataName:$dataName})")
 
             val resp = factory.upload(
                 cloneStream, fileName, type, size, createBy, (if (contentType?.isNotEmpty() == true)
@@ -124,11 +124,11 @@ class UploadManager(
     }
 
     @JvmOverloads
-    fun getInputStream(dataType: String? = null, bucket: String, path: String): Resp<InputStream?> {
-        logger.info("$dataType;$bucket;$path")
+    fun getInputStream(dataType: String? = null, dataName: String, path: String): Resp<InputStream?> {
+        logger.info("$dataType;$dataName;$path")
         val factory =
-            findUploader(dataType, bucket)
-                ?: return Resp.fail("Can't find uploader by ({dataType:$dataType;bucket:$bucket})")
+            findUploader(dataType, dataName)
+                ?: return Resp.fail("Can't find uploader by ({dataType:$dataType;dataName:$dataName})")
         return factory.getInputStream(path)
     }
 
