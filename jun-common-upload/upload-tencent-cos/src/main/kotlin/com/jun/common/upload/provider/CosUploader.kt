@@ -1,9 +1,9 @@
 package com.jun.common.upload.provider
 
 import cn.hutool.crypto.digest.DigestUtil
+import com.jun.common.core.util.TempFileUtil
 import com.jun.common.core.web.Resp
 import com.jun.common.upload.AbstractUploader
-import com.jun.common.upload.UploadManager
 import com.jun.common.upload.model.Media
 import com.jun.common.upload.provider.config.CosUploadProperties
 import com.qcloud.cos.COSClient
@@ -82,7 +82,7 @@ class CosUploader(private val properties: CosUploadProperties) :
         val objectKey = objectKey(mediaId, mediaName)
         val actualSize: Long
         val calculatedMd5: String
-        val tempFile = UploadManager.getTempFile()
+        val tempFile = TempFileUtil.getTempFile()
         try {
             inputStream.use {
                 FileOutputStream(tempFile).use { out ->

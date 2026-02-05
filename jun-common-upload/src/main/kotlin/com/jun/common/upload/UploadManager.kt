@@ -3,9 +3,9 @@ package com.jun.common.upload
 import com.jun.common.core.web.Resp
 import com.jun.common.upload.event.UploadEvent
 import com.jun.common.upload.model.Media
+import com.jun.common.upload.model.UploadObject
 import org.slf4j.LoggerFactory
 import org.springframework.web.multipart.MultipartFile
-import java.io.File
 import java.io.InputStream
 
 /**
@@ -18,33 +18,6 @@ class UploadManager(
     private val uploaderFactories: List<UploaderFactory>
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
-
-    companion object {
-        const val TEMP_ROOT = "jun.uploader.temp.dir"
-        private val defaultTempDir = File(System.getProperty("user.dir"), "temp")
-
-        private fun tempRoot(): File {
-            val path = System.getProperty(TEMP_ROOT) ?: defaultTempDir.absolutePath
-            return File(path).apply {
-                if (!this.exists()) {
-                    this.mkdirs()
-                }
-            }
-        }
-
-        fun getTempFile(isDirectory: Boolean = false): File {
-            val name = "temp_${System.currentTimeMillis()}"
-            val temp = File(tempRoot(), name)
-            if (isDirectory) {
-                temp.mkdir()
-            } else {
-                temp.createNewFile()
-            }
-            temp.deleteOnExit()
-            return temp
-        }
-
-    }
 
     private val listeners = mutableListOf<UploadListener>()
 
@@ -64,8 +37,8 @@ class UploadManager(
         return uploaderFactories.firstOrNull { it.dataType() == dataType }?.createUploader(dataName)
     }
 
-    private fun findUploaderByBucket(bucket: String): Uploader? {
-        return uploaderFactories.firstNotNullOfOrNull { it.createUploader(bucket) }
+    private fun findUploaderByBucket(dataName: String): Uploader? {
+        return uploaderFactories.firstNotNullOfOrNull { it.createUploader(dataName) }
     }
 
     @JvmOverloads
@@ -95,13 +68,13 @@ class UploadManager(
         createBy: String
     ): Resp<Media?> {
         logger.info("$dataType;$dataName;$type;$size;$contentType;$createBy")
-        val cloneStream = CloseAwareInputStream(inputStream = inputStream)
+        val cloneStream = (inputStream as? CloseAwareInputStream)?: CloseAwareInputStream(inputStream = inputStream)
         return fun(): Resp<Media?> {
-            val factory =
+            val uploader =
                 findUploader(dataType, dataName)
                     ?: return Resp.fail("Can't find uploader by ({name:$dataType;dataName:$dataName})")
 
-            val resp = factory.upload(
+            val resp = uploader.upload(
                 cloneStream, fileName, type, size, createBy, (if (contentType?.isNotEmpty() == true)
                     contentType
                 else
@@ -135,11 +108,11 @@ class UploadManager(
     @JvmOverloads
     fun upload(
         dataType: String? = null,
-        bucket: String,
+        dataName: String,
         createBy: String,
         file: MultipartFile
     ): Resp<Media?> {
-        logger.info("$dataType;$bucket;$createBy")
+        logger.info("$dataType;$dataName;$createBy")
         logger.info("upload (${file.originalFilename})")
         if (file.isEmpty) {
             return Resp.fail("File is is empty")
@@ -149,13 +122,33 @@ class UploadManager(
         val size = file.size
         val type = fileName?.substringAfterLast('.', "") ?: ""
 
-        val resp = verify(dataType, bucket, type, size, contentType)
-        if (!resp.isSuccess())
-            return Resp.fail(resp)
-
         val inputStream = CloseAwareInputStream(inputStream = file.inputStream)
 
-        return upload(dataType, bucket, inputStream, fileName ?: "", type, size, contentType, createBy).apply {
+        return upload(dataType, dataName, inputStream, fileName ?: "", type, size, contentType, createBy).apply {
+            try {
+                if (!inputStream.isClosed()) {
+                    inputStream.close()
+                }
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun upload(
+        uploadObject: UploadObject
+    ): Resp<Media?> {
+        val dataType = uploadObject.dataType
+        val dataName = uploadObject.dataName
+        val createBy = uploadObject.createdBy?: "unknown"
+        logger.info("$dataType;$dataName;$createBy")
+        val contentType = uploadObject.contentType ?: "unknown"
+        val fileName = uploadObject.name
+        val size = uploadObject.size
+        val type = uploadObject.type?: "unknown"
+
+        val inputStream = CloseAwareInputStream(inputStream = uploadObject.inputStream)
+
+        return upload(dataType, dataName, inputStream, fileName ?: "", type, size, contentType, createBy).apply {
             try {
                 if (!inputStream.isClosed()) {
                     inputStream.close()

@@ -14,12 +14,7 @@ dependencies {
 	api("com.amazonaws:aws-java-sdk-s3:${property("awsSdkS3")}")
 }
 
-tasks.withType<KotlinCompile> {
-	kotlinOptions {
-		freeCompilerArgs += "-Xjsr305=strict"
-		jvmTarget = "17"
-	}
-}
+
 
 tasks.withType<Test> {
 	useJUnitPlatform()

@@ -13,12 +13,7 @@ dependencies {
 	implementation("io.swagger:swagger-annotations:${property("swaggerAnnotations")}")
 }
 
-tasks.withType<KotlinCompile> {
-	kotlinOptions {
-		freeCompilerArgs += "-Xjsr305=strict"
-		jvmTarget = "17"
-	}
-}
+
 
 tasks.withType<Test> {
 	useJUnitPlatform()

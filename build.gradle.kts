@@ -33,6 +33,7 @@ subprojects {
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions {
+            freeCompilerArgs += "-Xjsr305=strict"
             jvmTarget = "17"
         }
     }
@@ -48,9 +49,6 @@ subprojects {
         useJUnitPlatform()
     }
 
-    tasks.register<Jar>("sourcesJar") {
-        archiveClassifier.set("sources")
-        from(sourceSets["main"].allSource)
-    }
 }
 apply(from = "${project.rootDir}/publish-to-maven.gradle.kts")
+//apply(from = "${project.rootDir}/publish-to-maven-central.gradle.kts")
