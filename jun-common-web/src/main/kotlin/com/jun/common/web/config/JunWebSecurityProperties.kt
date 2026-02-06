@@ -13,9 +13,11 @@ class JunWebSecurityProperties {
 
     var jwtEnable:Boolean?=null
     var basicEnable:Boolean?=null
+    var signatureEnable:Boolean?=null
 
     var jwt: List<JunJwtProperties>? = null
     var basic: List<JunBasicProperties>? = null
+    var signature: List<JunSignatureProperties>? = null
 
     var errorNoToken: ErrorCode = ErrorCode(4011, "请登录")
     var errorTokenExpired: ErrorCode = ErrorCode(4012, "登录已过期")

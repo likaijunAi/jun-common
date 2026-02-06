@@ -3,6 +3,7 @@ package com.jun.common.autoconfigure.web
 import com.jun.common.web.config.JunWebSecurityProperties
 import com.jun.common.web.filter.JunBasicSecurityFilter
 import com.jun.common.web.filter.JunJwtSecurityFilter
+import com.jun.common.web.filter.JunSignatureSecurityFilter
 import com.jun.common.web.resolver.ResolverManager
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
@@ -38,7 +39,7 @@ class SecurityFilterRegistration :
                 val registration = FilterRegistrationBean<JunBasicSecurityFilter>()
                 registration.filter = JunBasicSecurityFilter(resolverManager, webProperties, prop)
                 registration.addUrlPatterns("/*")
-                registration.order = prop.order ?: (Ordered.HIGHEST_PRECEDENCE + 1)
+                registration.order = (Ordered.HIGHEST_PRECEDENCE + (prop.order ?: 1))
 
                 val beanName = prop.name ?: "basicFilterReg$index"
 
@@ -50,10 +51,22 @@ class SecurityFilterRegistration :
                 val registration = FilterRegistrationBean<JunJwtSecurityFilter>()
                 registration.filter = JunJwtSecurityFilter(resolverManager, webProperties, prop)
                 registration.addUrlPatterns("/*")
-                registration.order = prop.order ?: (Ordered.HIGHEST_PRECEDENCE + 1)
+                registration.order = (Ordered.HIGHEST_PRECEDENCE + (prop.order ?: 1))
 
                 val beanName = prop.name ?: "jwtFilterReg$index"
 
+                beanFactory.registerSingleton(beanName, registration)
+            }
+        }
+
+        if (webProperties?.signatureEnable == true) {
+            webProperties.signature?.forEachIndexed { index, prop ->
+                val registration = FilterRegistrationBean<JunSignatureSecurityFilter>()
+                registration.filter = JunSignatureSecurityFilter(resolverManager, webProperties, prop)
+                registration.addUrlPatterns("/*")
+                registration.order = (Ordered.HIGHEST_PRECEDENCE + (prop.order ?: 1))
+
+                val beanName = prop.name ?: "signatureFilterReg$index"
                 beanFactory.registerSingleton(beanName, registration)
             }
         }
