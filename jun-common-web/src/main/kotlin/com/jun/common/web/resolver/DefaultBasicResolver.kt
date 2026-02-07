@@ -8,7 +8,7 @@ import com.jun.common.web.config.JunBasicProperties
  * l@xsocket.cn
  * create 2026/1/27 10:01
  **/
-class DefaultBasicResolver(private val basicConfig: JunBasicProperties) : BasicResolver {
+open class DefaultBasicResolver(private val basicConfig: JunBasicProperties) : BasicResolver {
     override fun verify(username: String, password: String): Boolean {
         val account = basicConfig.account?.firstOrNull { it.username == username }
         return account?.password == password

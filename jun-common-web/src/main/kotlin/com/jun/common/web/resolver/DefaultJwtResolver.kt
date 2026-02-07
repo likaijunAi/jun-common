@@ -19,7 +19,7 @@ import java.util.Date
  * l@xsocket.cn
  * created at 2024/7/15 22:31
  **/
-class DefaultJwtResolver(private val config: JunJwtProperties) : JwtResolver {
+open class DefaultJwtResolver(private val config: JunJwtProperties) : JwtResolver {
 
     private val jwtVerifier by lazy {
         val algorithm = Algorithm.HMAC256(config.secret)

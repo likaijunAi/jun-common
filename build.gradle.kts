@@ -1,4 +1,4 @@
-apply(from = "${project.rootDir}/constants.gradle.kts")
+ apply(from = "${project.rootDir}/constants.gradle.kts")
 
 plugins {
     kotlin("jvm") version "1.9.25"
@@ -50,5 +50,5 @@ subprojects {
     }
 
 }
-apply(from = "${project.rootDir}/publish-to-maven.gradle.kts")
+//apply(from = "${project.rootDir}/publish-to-maven.gradle.kts")
 //apply(from = "${project.rootDir}/publish-to-maven-central.gradle.kts")

@@ -2,6 +2,7 @@ package com.jun.common.autoconfigure.web
 
 import com.jun.common.web.config.JunWebSecurityProperties
 import com.jun.common.web.filter.JunBasicSecurityFilter
+import com.jun.common.web.filter.JunCustomSecurityFilter
 import com.jun.common.web.filter.JunJwtSecurityFilter
 import com.jun.common.web.filter.JunSignatureSecurityFilter
 import com.jun.common.web.resolver.ResolverManager
@@ -67,6 +68,18 @@ class SecurityFilterRegistration :
                 registration.order = (Ordered.HIGHEST_PRECEDENCE + (prop.order ?: 1))
 
                 val beanName = prop.name ?: "signatureFilterReg$index"
+                beanFactory.registerSingleton(beanName, registration)
+            }
+        }
+
+        if (webProperties?.customEnable == true) {
+            webProperties.custom?.forEachIndexed { index, prop ->
+                val registration = FilterRegistrationBean<JunCustomSecurityFilter>()
+                registration.filter = JunCustomSecurityFilter(resolverManager, prop)
+                registration.addUrlPatterns("/*")
+                registration.order = (Ordered.HIGHEST_PRECEDENCE + (prop.order ?: 1))
+
+                val beanName = prop.name ?: "customFilterReg$index"
                 beanFactory.registerSingleton(beanName, registration)
             }
         }
