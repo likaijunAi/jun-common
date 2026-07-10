@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component
 @Component
 @ConfigurationProperties("jun.upload.provider")
 class BaiduObsUploadConfig {
-    var baiduObs: List<CosUploadProperties>? = null
+    var baiduObs: List<BaiduObsUploadProperties>? = null
 
-    fun of(name: String): CosUploadProperties? {
-        return cos?.firstOrNull { it.name == name }
+    fun of(name: String): BaiduObsUploadProperties? {
+        return baiduObs?.firstOrNull { it.name == name }
     }
 }

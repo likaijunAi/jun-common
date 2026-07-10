@@ -2,8 +2,8 @@ package com.jun.common.upload.provider
 
 import com.jun.common.upload.AbstractUploaderFactory
 import com.jun.common.upload.Uploader
-import com.jun.common.upload.provider.config.CosUploadConfig
-import com.jun.common.upload.provider.config.CosUploadProperties
+import com.jun.common.upload.provider.config.BaiduObsUploadConfig
+import com.jun.common.upload.provider.config.BaiduObsUploadProperties
 import org.springframework.stereotype.Service
 
 /**
@@ -13,14 +13,14 @@ import org.springframework.stereotype.Service
  * create 2026/1/23 15:29
  **/
 @Service
-class BaiduObsUploaderFactory(val config: CosUploadConfig) : AbstractUploaderFactory(CosUploader.NAME) {
+class BaiduObsUploaderFactory(val config: BaiduObsUploadConfig) : AbstractUploaderFactory(BaiduObsUploader.NAME) {
     companion object {
-        fun build(config: CosUploadConfig): CosUploaderFactory {
-            return CosUploaderFactory(config)
+        fun build(config: BaiduObsUploadConfig): BaiduObsUploaderFactory {
+            return BaiduObsUploaderFactory(config)
         }
 
-        fun createUploader(properties: CosUploadProperties): CosUploader {
-            return CosUploader(properties)
+        fun createUploader(properties: BaiduObsUploadProperties): BaiduObsUploader {
+            return BaiduObsUploader(properties)
         }
     }
 

@@ -5,7 +5,7 @@ import com.jun.common.core.util.TempFileUtil
 import com.jun.common.core.web.Resp
 import com.jun.common.upload.AbstractUploader
 import com.jun.common.upload.model.Media
-import com.jun.common.upload.provider.config.CosUploadProperties
+import com.jun.common.upload.provider.config.BaiduObsUploadProperties
 import com.qcloud.cos.COSClient
 import com.qcloud.cos.ClientConfig
 import com.qcloud.cos.auth.BasicCOSCredentials
@@ -26,7 +26,7 @@ import java.util.concurrent.Executors
  * l@xsocket.cn
  * create 2026/1/23 17:10
  **/
-class BaiduObsUploader(private val properties: CosUploadProperties) :
+class BaiduObsUploader(private val properties: BaiduObsUploadProperties) :
     AbstractUploader(properties) {
 
     companion object {
