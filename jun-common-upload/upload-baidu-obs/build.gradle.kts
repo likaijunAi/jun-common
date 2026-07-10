@@ -11,12 +11,7 @@ dependencies {
 	implementation("com.google.code.gson:gson:${property("gson")}")
 	implementation("cn.hutool:hutool-all:${property("hutool")}")
 
-	api("com.qcloud:cos_api:${property("cosApi")}") {
-		exclude(group = "org.bouncycastle", module = "bcprov-jdk15on")
-		exclude(group = "com.thoughtworks.xstream", module = "xstream")
-		exclude(group = "com.squareup.okio", module = "okio")
-		exclude(group = "org.ini4j", module = "ini4j")
-	}
+	api("com.baidubce:bce-java-sdk:${property("bceSdk")}")
 }
 
 

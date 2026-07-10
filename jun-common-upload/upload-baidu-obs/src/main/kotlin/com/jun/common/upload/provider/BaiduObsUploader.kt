@@ -1,23 +1,17 @@
 package com.jun.common.upload.provider
 
 import cn.hutool.crypto.digest.DigestUtil
+import com.baidubce.auth.DefaultBceCredentials
+import com.baidubce.services.bos.BosClient
+import com.baidubce.services.bos.BosClientConfiguration
+import com.baidubce.services.bos.model.ObjectMetadata
 import com.jun.common.core.util.TempFileUtil
 import com.jun.common.core.web.Resp
 import com.jun.common.upload.AbstractUploader
 import com.jun.common.upload.model.Media
 import com.jun.common.upload.provider.config.BaiduObsUploadProperties
-import com.qcloud.cos.COSClient
-import com.qcloud.cos.ClientConfig
-import com.qcloud.cos.auth.BasicCOSCredentials
-import com.qcloud.cos.http.HttpProtocol
-import com.qcloud.cos.model.GetObjectRequest
-import com.qcloud.cos.model.ObjectMetadata
-import com.qcloud.cos.model.PutObjectRequest
-import com.qcloud.cos.region.Region
-import com.qcloud.cos.transfer.TransferManager
 import java.io.*
 import java.util.*
-import java.util.concurrent.Executors
 
 
 /**
@@ -25,33 +19,31 @@ import java.util.concurrent.Executors
  * https://github.com/likaijunAi
  * l@xsocket.cn
  * create 2026/1/23 17:10
+ *
+ * 百度智能云 BOS 对象存储上传实现，基于官方 Java SDK (com.baidubce:bce-java-sdk)。
+ * 文档: https://cloud.baidu.com/doc/BOS/s/4jwvyrq6p
  **/
 class BaiduObsUploader(private val properties: BaiduObsUploadProperties) :
     AbstractUploader(properties) {
 
     companion object {
         const val NAME = "baidu-obs"
+        // 百度 BOS region 短码：bj(北京) gz(广州) su(苏州) cd(成都) hkg(香港) 等
+        const val DEFAULT_REGION = "gz"
     }
 
-    private val region = "ap-shanghai"
-    private val threadPool = Executors.newFixedThreadPool(32)
+    private fun getClient(): BosClient {
+        val accessKey = properties.secretId
+            ?: throw IllegalStateException("Missing Baidu BOS accessKey (secretId)")
+        val secretKey = properties.secretKey
+            ?: throw IllegalStateException("Missing Baidu BOS secretKey")
+        val region = properties.region?.takeIf { it.isNotEmpty() } ?: DEFAULT_REGION
 
-    private fun getClient(): COSClient {
-        val cred = BasicCOSCredentials(properties.secretId, properties.secretKey)
-        val region = Region(properties.region?.takeIf { it.isNotEmpty() } ?: region)
-        val clientConfig = ClientConfig(region)
-        clientConfig.httpProtocol = HttpProtocol.http
+        val config = BosClientConfiguration()
+        config.credentials = DefaultBceCredentials(accessKey, secretKey)
+        config.endpoint = "$region.bcebos.com"
 
-        return COSClient(cred, clientConfig)
-    }
-
-    private fun <T> withTransferManager(block: (TransferManager) -> T): T {
-        val tm = TransferManager(getClient(), threadPool)
-        try {
-            return block(tm)
-        } finally {
-            tm.shutdownNow(true)
-        }
+        return BosClient(config)
     }
 
     override fun upload(
@@ -62,9 +54,9 @@ class BaiduObsUploader(private val properties: BaiduObsUploadProperties) :
         createBy: String,
         contentType: String?
     ): Resp<Media?> {
-        val bucket = properties.bucket ?: return Resp.fail("Invalid cos bucket")
+        val bucket = properties.bucket ?: return Resp.fail("Invalid bos bucket")
 
-        logger.info("cosBucket:$bucket")
+        logger.info("bosBucket:$bucket")
 
         val mediaName = name.takeIf { it.trim().isNotEmpty() } ?: mediaName()
         if (!isValidFileName(mediaName)) {
@@ -97,19 +89,19 @@ class BaiduObsUploader(private val properties: BaiduObsUploadProperties) :
             objectMetadata.contentLength = actualSize
 
             FileInputStream(tempFile).use { input ->
-                val putObjectRequest = PutObjectRequest(bucket, objectKey, input, objectMetadata)
-
-                withTransferManager {
-                    val upload = it.upload(putObjectRequest)
-                    val uploadResult = upload.waitForUploadResult()
-                    logger.info("eTag:${uploadResult.eTag}")
+                val client = getClient()
+                try {
+                    val putObjectResponse = client.putObject(bucket, objectKey, input, objectMetadata)
+                    logger.info("eTag:${putObjectResponse.eTag}")
+                } finally {
+                    client.shutdown()
                 }
             }
 
             calculatedMd5 = DigestUtil.md5Hex(tempFile)
 
         } catch (e: Exception) {
-            logger.error("COS file upload failed: ${e.message}", e)
+            logger.error("BOS file upload failed: ${e.message}", e)
             return Resp.fail("Upload file failed: ${e.message}")
         } finally {
             try {
@@ -138,21 +130,20 @@ class BaiduObsUploader(private val properties: BaiduObsUploadProperties) :
 
     override fun getInputStream(path: String): Resp<InputStream?> {
         try {
-            val cosBucket = properties.bucket ?: return Resp.fail("Invalid cos bucket")
+            val bosBucket = properties.bucket ?: return Resp.fail("Invalid bos bucket")
 
             val objectKey = if (properties.prefix?.isNotEmpty() == true && path.startsWith(properties.prefix!!)) {
                 path.replaceFirst("/${properties.prefix}", "")
             } else
                 path
 
-            val getObjectRequest = GetObjectRequest(cosBucket, objectKey)
             val client = getClient()
-            val cosObject = client.getObject(getObjectRequest)
+            val bosObject = client.getObject(bosBucket, objectKey)
 
-            return Resp.success(cosObject.objectContent)
+            return Resp.success(bosObject.objectContent)
 
         } catch (e: Exception) {
-            logger.error("COS file download failed: ${e.message}", e)
+            logger.error("BOS file download failed: ${e.message}", e)
             return Resp.fail("Download file failed:  ${e.message}")
         }
     }

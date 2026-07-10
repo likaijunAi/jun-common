@@ -19,6 +19,7 @@ include(":jun-common-core")
 include(":jun-common-web")
 include(":jun-common-upload")
 include(":jun-common-autoconfigure")
+include(":jun-common-rbac")
 include(":jun-common-starter")
 
 include(":jun-common-upload:upload-local-file")

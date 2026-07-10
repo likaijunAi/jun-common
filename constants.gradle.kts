@@ -22,6 +22,7 @@ extra["swaggerAnnotations"] = "1.6.14"
 
 extra["cosApi"]        =  "5.6.261"
 extra["awsSdkS3"]      =  "1.12.762"
+extra["bceSdk"]        =  "0.10.380"
 
 
 
