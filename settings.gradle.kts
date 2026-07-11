@@ -30,3 +30,7 @@ include(":jun-common-upload:upload-aws-s3")
 findProject(":jun-common-upload:upload-aws-s3")?.name = "upload-aws-s3"
 include(":jun-common-upload:upload-baidu-obs")
 findProject(":jun-common-upload:upload-baidu-obs")?.name = "upload-baidu-obs"
+include(":jun-common-upload:upload-huawei-obs")
+findProject(":jun-common-upload:upload-huawei-obs")?.name = "upload-huawei-obs"
+include(":jun-common-upload:upload-ali-oss")
+findProject(":jun-common-upload:upload-ali-oss")?.name = "upload-ali-oss"
