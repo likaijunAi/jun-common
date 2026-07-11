@@ -86,13 +86,11 @@ class HuaweiObsUploader(private val properties: HuaweiObsUploadProperties) :
             objectMetadata.contentLength = actualSize
 
             FileInputStream(tempFile).use { input ->
-                val client = getClient()
-                try {
-                    val putObjectRequest = PutObjectRequest(bucket, objectKey, input, objectMetadata)
+                getClient().use { client ->
+                    val putObjectRequest = PutObjectRequest(bucket, objectKey, input)
+                    putObjectRequest.metadata = objectMetadata
                     val putObjectResult = client.putObject(putObjectRequest)
                     logger.info("eTag:${putObjectResult.etag}")
-                } finally {
-                    client.shutdown()
                 }
             }
 
