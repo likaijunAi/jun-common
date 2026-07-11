@@ -24,6 +24,8 @@
 | 腾讯云 COS | 5.6.261 |
 | AWS S3 SDK | 1.12.762 |
 | 百度云 BCE | 0.10.380 |
+| 华为云 OBS | 3.25.5 |
+| 阿里云 OSS | 3.18.2 |
 
 ## 模块结构
 
@@ -41,7 +43,9 @@ jun-common
 │     ├── upload-local-file  本地文件存储（无外部 SDK）
 │     ├── upload-tencent-cos 腾讯云 COS
 │     ├── upload-aws-s3      AWS S3
-│     └── upload-baidu-obs   百度云 BOS
+│     ├── upload-baidu-obs   百度云 BOS
+│     ├── upload-huawei-obs  华为云 OBS
+│     └── upload-ali-oss     阿里云 OSS
 ├── jun-common-rbac          RBAC 权限模型与评估（依赖 core）
 ├── jun-common-autoconfigure Spring Boot 自动装配（依赖 core/web/upload/rbac）
 └── jun-common-starter       聚合门面（api 透传以上所有模块）
@@ -202,6 +206,8 @@ val streamResp = uploadManager.getInputStream(dataName = "avatar", path = media.
 | `upload-tencent-cos` | 腾讯云 COS |
 | `upload-aws-s3` | AWS S3 |
 | `upload-baidu-obs` | 百度云 BOS |
+| `upload-huawei-obs` | 华为云 OBS |
+| `upload-ali-oss` | 阿里云 OSS |
 
 上传监听器 `UploadListener` 可在上传完成后收到 `UploadEvent` 通知。
 
@@ -315,6 +321,22 @@ jun:
           secret-key: <secretKey>
           region: bj
           bucket: my-bos-bucket
+      # 华为云 OBS
+      huawei-obs:
+        - name: obs-media
+          upload-path: media
+          secret-id: <secretId>
+          secret-key: <secretKey>
+          region: cn-north-4
+          bucket: my-obs-bucket
+      # 阿里云 OSS
+      ali-oss:
+        - name: oss-media
+          upload-path: media
+          secret-id: <AccessKeyId>
+          secret-key: <AccessKeySecret>
+          region: cn-hangzhou
+          bucket: my-oss-bucket
 ```
 
 Provider 公共属性：`name`（必填标识）、`upload-path`（必填存储位置）、`max-size`、`type`（允许扩展名列表）、`prefix`、`split-bucket`（默认 1，按 `yyyy-MM/mediaId` 分子目录；为 0 时覆盖原文件）、`bucket`。
