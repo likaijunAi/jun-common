@@ -42,6 +42,7 @@ class PermissionController(private val permissionService: PermissionService) {
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: String): Resp<Boolean> {
         permissionService.delete(id)
+
         return ok(true)
     }
 
