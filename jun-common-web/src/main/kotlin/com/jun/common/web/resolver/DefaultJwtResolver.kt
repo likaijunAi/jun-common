@@ -4,11 +4,13 @@ import cn.hutool.core.codec.Base64
 import cn.hutool.crypto.SecureUtil
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTCreator
+import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.jun.common.core.util.JwtPayload
 import com.jun.common.core.web.GsonFactory
 import com.jun.common.web.config.JunJwtProperties
+import com.jun.common.web.resolver.permission.PermissionResolver
 import java.io.UnsupportedEncodingException
 import java.util.Date
 
@@ -21,13 +23,15 @@ import java.util.Date
  **/
 open class DefaultJwtResolver(private val config: JunJwtProperties) : JwtResolver {
 
-    private val jwtVerifier by lazy {
+    private val _jwtVerifier by lazy {
         val algorithm = Algorithm.HMAC256(config.secret)
         val builder = JWT.require(algorithm)
         if (config.issuer.isNotEmpty())
             builder.withIssuer(config.issuer)
         builder.build()
     }
+
+    fun jwtVerifier() : JWTVerifier  = _jwtVerifier
 
     @Throws(UnsupportedEncodingException::class)
     override fun generateToken(jwtPayload: JwtPayload): String? {
@@ -50,10 +54,14 @@ open class DefaultJwtResolver(private val config: JunJwtProperties) : JwtResolve
 
     @Throws(UnsupportedEncodingException::class)
     override fun parseToken(token: String?): JwtPayload {
-        val decodedJWT: DecodedJWT = jwtVerifier.verify(token)
+        val decodedJWT: DecodedJWT = _jwtVerifier.verify(token)
         val payload: String = decodedJWT.getClaim(config.claimName).asString()
         val dataBytes = Base64.decode(payload)
         val decryptBytes = SecureUtil.des(config.secret.toByteArray(Charsets.UTF_8)).decrypt(dataBytes)
         return GsonFactory.defaultGson.fromJson(String(decryptBytes,Charsets.UTF_8), JwtPayload::class.java)
+    }
+
+    override fun permissionResolver(): PermissionResolver? {
+        return null
     }
 }

@@ -24,6 +24,7 @@ class JunWebSecurityProperties {
     var errorNoToken: ErrorCode = ErrorCode(4011, "请登录")
     var errorTokenExpired: ErrorCode = ErrorCode(4012, "登录已过期")
     var errorTokenInvalid: ErrorCode = ErrorCode(4013, "登录已失效")
+    var errorTokenPermission: ErrorCode = ErrorCode(4014, "没有访问权限")
 
     class ErrorCode(var code: Int, var msg: String?)
 }

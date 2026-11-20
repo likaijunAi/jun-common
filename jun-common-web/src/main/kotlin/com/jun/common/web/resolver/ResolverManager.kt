@@ -1,7 +1,5 @@
 package com.jun.common.web.resolver
 
-import com.jun.common.web.config.JunBasicProperties
-import com.jun.common.web.config.JunJwtProperties
 import com.jun.common.web.config.JunSecurityProperties
 import com.jun.common.web.spring.ApplicationHolder
 import org.slf4j.LoggerFactory
@@ -14,6 +12,8 @@ import org.slf4j.LoggerFactory
  **/
 class ResolverManager {
     private val logger = LoggerFactory.getLogger(javaClass)
+
+    private val defaultResolverFactory = DefaultResolverFactory()
 
     private val resolverFactories: List<ResolverFactory> by lazy {
         val applicationContext = ApplicationHolder.applicationContext()
@@ -29,15 +29,6 @@ class ResolverManager {
             factory.createResolver(props)
         }?.let { return it }
 
-        return createDefaultResolver(props)
-    }
-
-    private fun createDefaultResolver(props: JunSecurityProperties): Resolver? = when (props) {
-        is JunBasicProperties -> DefaultBasicResolver(props)
-        is JunJwtProperties -> DefaultJwtResolver(props)
-        else -> {
-            logger.warn("Unknown security properties type: ${props.javaClass.name}")
-            null
-        }
+        return defaultResolverFactory.createResolver(props)
     }
 }

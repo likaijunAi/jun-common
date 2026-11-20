@@ -1,6 +1,7 @@
 package com.jun.common.web.resolver
 
 import com.jun.common.core.util.JwtPayload
+import com.jun.common.web.resolver.permission.PermissionResolver
 import java.io.UnsupportedEncodingException
 
 /**
@@ -15,4 +16,6 @@ interface JwtResolver : Resolver {
 
     @Throws(UnsupportedEncodingException::class)
     fun parseToken(token: String?): JwtPayload
+
+    fun permissionResolver(): PermissionResolver?
 }

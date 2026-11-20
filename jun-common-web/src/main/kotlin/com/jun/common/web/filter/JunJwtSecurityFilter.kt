@@ -7,6 +7,7 @@ import com.jun.common.web.exception.ResolveException
 import com.jun.common.web.exception.UnauthorizedException
 import com.jun.common.web.resolver.JwtResolver
 import com.jun.common.web.resolver.ResolverManager
+import com.jun.common.web.resolver.permission.JwtPermissionResolver
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -98,6 +99,23 @@ class JunJwtSecurityFilter(
                 val verifyId: String?
                 try {
                     val payload = resolver.parseToken(token)
+
+                    val permissionResolver = resolver.permissionResolver() as? JwtPermissionResolver
+                    if (permissionResolver != null && !permissionResolver.hasPermission(payload, requestUri)) {
+                        val error = properties.errorTokenPermission
+                        val exception = UnauthorizedException(error.code, error.msg)
+                        if (resolveException(
+                                request,
+                                response,
+                                exception
+                            )
+                        ) {
+                            return
+                        } else {
+                            throw exception
+                        }
+                    }
+
                     verifyId = payload.payloadId
                     payload.userid?.apply {
                         request.setAttribute(JunWebRequestTraceFilter.VERIFY_USER_ID, this)
