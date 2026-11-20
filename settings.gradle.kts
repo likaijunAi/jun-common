@@ -33,6 +33,3 @@ include(":jun-common-upload:upload-huawei-obs")
 findProject(":jun-common-upload:upload-huawei-obs")?.name = "upload-huawei-obs"
 include(":jun-common-upload:upload-ali-oss")
 findProject(":jun-common-upload:upload-ali-oss")?.name = "upload-ali-oss"
-
-include(":jun-common-rbac:rbac-mysql")
-findProject(":jun-common-rbac:rbac-mysql")?.name = "rbac-mysql"

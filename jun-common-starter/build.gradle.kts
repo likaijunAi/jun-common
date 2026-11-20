@@ -5,7 +5,6 @@ dependencies {
     api(project(":jun-common-web"))
     api(project(":jun-common-upload"))
     api(project(":jun-common-autoconfigure"))
-    api(project(":jun-common-rbac"))
 }
 
 
