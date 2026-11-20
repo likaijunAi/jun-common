@@ -29,6 +29,7 @@ class JunRedisCacheConfig {
         return JunJsonRedisTemplate(connectionFactory)
     }
 
+
     @Bean
     @ConditionalOnMissingBean(JunCache::class)
     fun junCache(@Qualifier("junJsonRedisTemplate") junJsonRedisTemplate: JunJsonRedisTemplate):JunCache {
