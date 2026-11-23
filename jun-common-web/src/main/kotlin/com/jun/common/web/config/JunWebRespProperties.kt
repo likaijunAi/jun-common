@@ -1,7 +1,7 @@
 package com.jun.common.web.config
 
 import com.jun.common.core.web.Resp
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.beans.factory.InitializingBean
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  * created at 2024/7/7 13:19
  **/
 @ConfigurationProperties("jun.web.resp")
-class JunWebRespProperties {
+class JunWebRespProperties : InitializingBean {
 
     private var successCode: Int = Resp.success
 
@@ -19,8 +19,7 @@ class JunWebRespProperties {
 
     private var queryPageSizeMax: Int = Resp.queryPageSizeMax
 
-    @ConditionalOnProperty("jun.web.resp.enable")
-    fun onConfigLoaded() {
+    override fun afterPropertiesSet() {
         Resp.queryPageSizeMax = this.queryPageSizeMax
         Resp.success = this.successCode
         Resp.fail = this.failCode
