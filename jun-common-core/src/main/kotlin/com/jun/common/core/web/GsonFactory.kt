@@ -64,6 +64,17 @@ object GsonFactory {
                 json.asJsonPrimitive.asInt
             })
         builder.registerTypeAdapter(
+            java.lang.Integer::class.java,
+            JsonDeserializer { json: JsonElement, _: Type?, _: JsonDeserializationContext? ->
+                if (json.asJsonPrimitive == null) {
+                    return@JsonDeserializer null
+                }
+                if (json.asJsonPrimitive.asString.isEmpty()) {
+                    return@JsonDeserializer null
+                }
+                json.asJsonPrimitive.asInt
+            })
+        builder.registerTypeAdapter(
             ByteArray::class.java,
             JsonDeserializer { json: JsonElement, _: Type?, _: JsonDeserializationContext? ->
                 Base64Decoder.decode(json.asString.toByteArray(StandardCharsets.UTF_8))
