@@ -43,7 +43,7 @@ class SecurityFilterRegistration :
                 registration.order = (Ordered.HIGHEST_PRECEDENCE + (prop.order ?: 1))
 
                 val beanName = prop.name ?: "basicFilterReg$index"
-
+                registration.setName(beanName)
                 beanFactory.registerSingleton(beanName, registration)
             }
         }
@@ -55,7 +55,7 @@ class SecurityFilterRegistration :
                 registration.order = (Ordered.HIGHEST_PRECEDENCE + (prop.order ?: 1))
 
                 val beanName = prop.name ?: "jwtFilterReg$index"
-
+                registration.setName(beanName)
                 beanFactory.registerSingleton(beanName, registration)
             }
         }
@@ -68,6 +68,7 @@ class SecurityFilterRegistration :
                 registration.order = (Ordered.HIGHEST_PRECEDENCE + (prop.order ?: 1))
 
                 val beanName = prop.name ?: "signatureFilterReg$index"
+                registration.setName(beanName)
                 beanFactory.registerSingleton(beanName, registration)
             }
         }
@@ -80,6 +81,7 @@ class SecurityFilterRegistration :
                 registration.order = (Ordered.HIGHEST_PRECEDENCE + (prop.order ?: 1))
 
                 val beanName = prop.name ?: "customFilterReg$index"
+                registration.setName(beanName)
                 beanFactory.registerSingleton(beanName, registration)
             }
         }
